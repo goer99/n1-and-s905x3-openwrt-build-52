@@ -4,7 +4,7 @@ work_dir=$(pwd)
 tmp_dir="$work_dir/tmp"
 out_dir="$work_dir/out"
 device="phicomm-n1"
-image_name="$(date "+%y.%m.%d-%H%M%S")-$device-arm64-openwrt-firmware"
+image_name="$device-arm64-openwrt-firmware"
 
 red="\033[31m"
 green="\033[32m"
@@ -120,7 +120,7 @@ utils() {
 
 make_image() {
     tip "make openwrt image..."
-    image="$out_dir/${image_name}.img"
+    image="$out_dir/$(date "+%y.%m.%d-%H%M%S")-$image_name.img"
 
     [ -d $out_dir ] || mkdir $out_dir
     fallocate -l ${root_size}M $image
