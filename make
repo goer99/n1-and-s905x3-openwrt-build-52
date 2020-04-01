@@ -1,7 +1,7 @@
 #!/bin/bash
 
 work_dir=$(pwd)
-tmp_dir="$work_dir/.tmp"
+tmp_dir="$work_dir/tmp"
 out_dir="$work_dir/out"
 device="phicomm-n1"
 image_name="$(date "+%y.%m.%d-%H%M%S")-$device-arm64-openwrt-firmware"
