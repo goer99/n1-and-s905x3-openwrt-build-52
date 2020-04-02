@@ -2,7 +2,7 @@
 
 # Build OpenWrt Firmware for PHICOMM N1
 
-**找几个人帮忙测试。有网友反馈制作成功之后无法启动，由于目前没有设备，测试不了，另外测试后期一键安装到emmc脚本。有兴趣的加群：[Phicomm N1固件测试交流群](shang.qq.com/wpa/qunwpa?idkey=3fff78f9d27d36fab0ca9fbd6057c7a1a949a82d509d0addb6a27a92e7ece2c7)**
+**找几个人帮忙测试。有网友反馈制作成功之后无法启动，由于目前没有设备，测试不了，另外测试后期一键安装到emmc脚本。有兴趣的加群：[Phicomm N1固件测试交流群](https://shang.qq.com/wpa/qunwpa?idkey=3fff78f9d27d36fab0ca9fbd6057c7a1a949a82d509d0addb6a27a92e7ece2c7)**
 
 ## 使用方法
 
