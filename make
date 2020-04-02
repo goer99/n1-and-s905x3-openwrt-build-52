@@ -116,6 +116,7 @@ extract_armbian_file() {
 utils() {
     # echo -en "pwm_meson" | tee $root_dir/etc/modules.d/pwm_meson >/dev/null 2>&1
     chown -R 0:0 $root_dir
+    mkdir -p $root_dir/run
 }
 
 make_image() {
