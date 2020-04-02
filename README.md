@@ -8,7 +8,7 @@
 2. 编译好待构建的`OpenWrt`固件，不会的自行科普 [Lean's OpenWrt source](https://github.com/coolsnowwolf/lede "Lean's OpenWrt source")
 3. 克隆仓库到本地<br>
 `git clone https://github.com/tuanqing/mknop.git`
-4. 将你编译好的OpenWrt固件拷贝到 `OpenWrt`目录（可以复制多个固件到此）
+4. 将你编译好的固件拷贝到`OpenWrt`目录（可以复制多个固件到此）
 5. 使用`sudo`执行脚本<br>
 `sudo ./make`
 6. 按照提示操作，如：选择你要制作的固件、设置`ROOTFS`分区大小等
