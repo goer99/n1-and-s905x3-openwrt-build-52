@@ -43,8 +43,8 @@ cleanup() {
         [ -d $tmp_dir/mount ] && {
             local st=true
             while $st; do
-                umount $tmp_dir/mount/* >/dev/null 2>&1 || st=false
-                umount $tmp_dir/mount >/dev/null 2>&1 || st=false
+                umount -f $tmp_dir/mount/* >/dev/null 2>&1 || st=false
+                umount -f $tmp_dir/mount >/dev/null 2>&1 || st=false
             done
         }
         rm -rf $tmp_dir
@@ -116,7 +116,9 @@ extract_armbian_file() {
 utils() {
     # echo -en "pwm_meson" | tee $root_dir/etc/modules.d/pwm_meson >/dev/null 2>&1
     chown -R 0:0 $root_dir
+    mkdir -p $root_dir/boot
     mkdir -p $root_dir/run
+    sed -i '/kmodloader/i\ \tulimit -n 51200\n' $root_dir/etc/init.d/boot
 }
 
 make_image() {
@@ -243,7 +245,7 @@ set_rootsize() {
     local i=0
     root_size=
     while true; do
-        [ ! $default ] && echo && read -p "$(info "input the ROOTFS partition size(unit m), default 512m, do not less than 256m\n if you don't know what's the means, press enter to keep the default: ")" root_size && echo
+        [ ! $default ] && echo && read -p "$(info "input the ROOTFS partition size, default 512m, do not less than 256m\n if you don't know what's the means, press enter to keep the default: ")" root_size && echo
         [ $root_size ] || root_size=512
         if [ $root_size -ge 256 ] >/dev/null 2>&1; then
             let root_size+=144
@@ -256,7 +258,6 @@ set_rootsize() {
         fi
     done
 }
-
 
 #
 cleanup
@@ -274,6 +275,8 @@ make_image $root_size
 format_image
 copy2image
 cleanup
+
+chmod 777 $out_dir
 
 tip "\n all done, enjoy!"
 
