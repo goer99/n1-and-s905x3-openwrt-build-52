@@ -141,8 +141,8 @@ format_image() {
     loop=$(losetup -P -f --show $image)
     [ ! $loop ] && {
         error "you used a lower version linux, you may try:\n
-${green} apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y\n
-${white} to fix it, or you can upgrade your system version."
+ ${green}apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y\n
+ ${white}to fix it, or you can upgrade your system version."
         exit
     }
 
@@ -267,7 +267,7 @@ while [ $1 ]; do
     case "$1" in
     -h | --help)
         echo -e \
-            "Usage:
+"Usage:
   make [option]
 
 Options:

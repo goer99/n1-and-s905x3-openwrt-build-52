@@ -30,8 +30,8 @@
          * `boot.tar.gz`，启动分区相关文件
          * `firmware.tar.gz`，设备驱动文件
          * `modules.tar.gz`，内核模块文件
-   * `openwrt`，用于存放待构建的OpenWrt固件
-   * `out`，输出文件夹，用于存放构建好的OpenWrt固件
+   * `openwrt`，用于存放待构建的`OpenWrt`固件
+   * `out`，输出文件夹，用于存放构建好的`OpenWrt`固件
    * `tmp`，临时文件夹，用于脚本转储
 
 * 使用参数
