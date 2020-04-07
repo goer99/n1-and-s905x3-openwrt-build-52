@@ -15,7 +15,7 @@ info() {
 }
 
 error() {
-    echo -e "$red e: $1 $white"
+    echo -e "$red e:$white $1"
 }
 
 tip() {
@@ -32,19 +32,16 @@ mount_image() {
 }
 
 umount_image() {
-    local path=$1
-
-    umount $path
-    rm -rf $path
+    umount -f $1
+    rm -rf $1
 }
 
 cleanup() {
     [ -d $tmp_dir ] && {
         [ -d $tmp_dir/mount ] && {
-            local st=true
-            while $st; do
-                umount -f $tmp_dir/mount/* >/dev/null 2>&1 || st=false
-                umount -f $tmp_dir/mount >/dev/null 2>&1 || st=false
+            for x in $(lsblk | grep "$tmp_dir/mount*" | grep -oE "(loop[0-9]|loop[0-9][0-9])" | uniq); do
+                umount -f /dev/${x}* >/dev/null 2>&1
+                losetup -d "/dev/$x"
             done
         }
         rm -rf $tmp_dir
@@ -53,6 +50,7 @@ cleanup() {
 
 extract_openwrt_file() {
     tip "extract openwrt files..."
+
     local path=$1
     local file_suffix="${path##*.}"
     mount_dir="$tmp_dir/mount"
@@ -61,17 +59,17 @@ extract_openwrt_file() {
     mkdir -p $root_dir
 
     while true; do
-        case $file_suffix in
-        "tar")
+        case "$file_suffix" in
+        tar)
             tar -xf $path -C $root_dir
             break
             ;;
-        "gz")
+        gz)
             gzip -d $path
             path=${path%.*}
             file_suffix="${path##*.}"
             ;;
-        "img")
+        img)
             loop=$(losetup -P -f --show $path)
             [ ! $loop ] && {
                 error "you used a lower version linux, you may try 
@@ -85,14 +83,15 @@ extract_openwrt_file() {
             losetup -d $loop
             break
             ;;
-        "ext4")
+        ext4)
             mount_image "rw,loop" $path $mount_dir
             cp -r $mount_dir/* $root_dir && sync
             umount_image $mount_dir
             break
             ;;
         *)
-            error "unsupported firmware format, check your firmware in openwrt folder!\n this script only supported rootfs.tar.gz, ext4-factory.img[.gz], root.ext4[.gz] five format."
+            error "unsupported firmware format, check your firmware in openwrt folder!\n
+ this script only supported rootfs.tar.gz, ext4-factory.img[.gz], root.ext4[.gz] five format."
             exit
             ;;
         esac
@@ -103,6 +102,7 @@ extract_openwrt_file() {
 
 extract_armbian_file() {
     tip "extract armbian files..."
+
     local path=$1
     boot_dir="$tmp_dir/boot"
 
@@ -114,30 +114,35 @@ extract_armbian_file() {
 }
 
 utils() {
-    # echo -en "pwm_meson" | tee $root_dir/etc/modules.d/pwm_meson >/dev/null 2>&1
-    chown -R 0:0 $root_dir
+    echo -en "pwm-meson" | tee $root_dir/etc/modules.d/pwm-meson >/dev/null 2>&1
+    sed -i '/kmodloader/i"\tulimit -n 51200\n"' $root_dir/etc/init.d/boot
+
     mkdir -p $root_dir/boot
     mkdir -p $root_dir/run
-    sed -i '/kmodloader/i\ \tulimit -n 51200\n' $root_dir/etc/init.d/boot
+    chown -R 0:0 $root_dir
 }
 
 make_image() {
     tip "make openwrt image..."
+
     image="$out_dir/$(date "+%y.%m.%d-%H%M%S")-$image_name.img"
 
     [ -d $out_dir ] || mkdir $out_dir
-    fallocate -l ${root_size}M $image
+    fallocate -l $((16 + 128 + root_size))M $image
 }
 
 format_image() {
     tip "format openwrt image..."
+
     parted -s $image mklabel msdos
     parted -s $image mkpart primary ext4 17M 151M
     parted -s $image mkpart primary ext4 151M 100%
 
     loop=$(losetup -P -f --show $image)
     [ ! $loop ] && {
-        error "you used a lower version linux, you may try:\n${green} apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y\n${red} to fix it, or you can upgrade your system version."
+        error "you used a lower version linux, you may try:\n
+${green} apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y\n
+${white} to fix it, or you can upgrade your system version."
         exit
     }
 
@@ -147,6 +152,7 @@ format_image() {
 
 copy2image() {
     tip "copy files to image..."
+
     local boot=$mount_dir/boot
     local root=$mount_dir/root
 
@@ -162,58 +168,24 @@ copy2image() {
     losetup -d $loop
 }
 
-option() {
-    for x in $@; do
-        case "$x" in
-        "--init" | "-i")
-            tip "link modules..."
-            local modules_dir="$work_dir/armbian/$device"
-            local modules="$tmp_dir/lib/modules/*/"
+get_file_list() {
+    files=("")
+    i=0
+    IFS=$(echo -en "\n\b")
 
-            mkdir -p $tmp_dir
-            tar -xzf $modules_dir/modules.tar.gz -C $tmp_dir
-
-            if ! (ls $modules | grep ".ko" >/dev/null 2>&1); then
-                cd $modules
-                for x in $(find -name "*.ko"); do
-                    ln -s $x ./ >/dev/null 2>&1
-                done
-                cd $tmp_dir/
-                tar -czf modules.tar.gz lib/
-                cp -r modules.tar.gz $modules_dir
-            else
-                info "already initialized!\n you don't need to use the option -i next time.\n"
-            fi
-
-            rm -rf $tmp_dir/*
-            cd $work_dir
-            ;;
-        "--default" | "-d")
-            default=true
-            ;;
-        "--clean" | "-c")
-            cleanup
-            rm -rf $out_dir
-            tip "finished clean up!\n"
-            exit
-            ;;
-        *)
-            error " invalid option -- $1"
-            ;;
-        esac
+    for x in $(ls $work_dir/openwrt); do
+        files[i++]=$x
     done
 }
 
 choose_firmware() {
-    files=()
     opt=
-    local i=0
-    IFS=$(echo -en "\n\b")
+    i=0
 
-    [ ! $default ] && echo -e " firmware: "
-    for x in $(ls $work_dir/openwrt); do
-        [ ! $default ] && echo " $((i + 1)). $x"
-        files[i++]=$x
+    info "firmware: "
+    for x in ${files[@]}; do
+        echo " $((i + 1)). $x"
+        let i++
     done
 
     local len=${#files[@]}
@@ -225,7 +197,7 @@ choose_firmware() {
     else
         i=0
         while true; do
-            [ ! $default ] && echo && read -p "$(info "select the firmware above, press enter to select the first one: ")" opt && echo
+            echo && read -p "$(info "select the firmware above, press enter to select the first one: ")" opt && echo
             [ $opt ] || opt=1
 
             if (($opt >= 1 && $opt <= $len)); then
@@ -241,14 +213,40 @@ choose_firmware() {
     fi
 }
 
+link_modules() {
+    tip "link modules..."
+
+    local modules_dir="$work_dir/armbian/$device"
+    local modules="$tmp_dir/lib/modules/*/"
+
+    mkdir -p $tmp_dir
+    tar -xzf $modules_dir/modules.tar.gz -C $tmp_dir
+
+    if ! (ls $modules | grep ".ko" >/dev/null 2>&1); then
+        cd $modules
+        for x in $(find -name "*.ko"); do
+            ln -s $x ./ >/dev/null 2>&1
+        done
+        cd $tmp_dir/
+        tar -czf modules.tar.gz lib/
+        cp -r modules.tar.gz $modules_dir
+    else
+        info "already initialized!\n you don't need to use the option -i next time.\n"
+    fi
+
+    rm -rf $tmp_dir/*
+    cd $work_dir
+}
+
 set_rootsize() {
     local i=0
     root_size=
+
     while true; do
-        [ ! $default ] && echo && read -p "$(info "input the ROOTFS partition size, default 512m, do not less than 256m\n if you don't know what's the means, press enter to keep the default: ")" root_size && echo
+        echo && read -p "$(info "input the ROOTFS partition size, default 512m, do not less than 256m\n
+ if you don't know what's the means, press enter to keep the default: ")" root_size && echo
         [ $root_size ] || root_size=512
         if [ $root_size -ge 256 ] >/dev/null 2>&1; then
-            let root_size+=144
             break
         else
             (($i >= 2)) && exit
@@ -259,17 +257,69 @@ set_rootsize() {
     done
 }
 
-#
-cleanup
-option $@
+##
+if ! (($UID == 0)); then
+    error "please use root to run this script"
+    exit
+fi
 
-choose_firmware
+while [ $1 ]; do
+    case "$1" in
+    -h | --help)
+        echo -e \
+            "Usage:
+  make [option]
+
+Options:
+  -c, --clean\t\tcleanup the output directory
+  -d, --default\t\tuse default configuration to make image, which where select the first one firmware in openwrt directory, and rootfs partition size set to 512m by default
+  -l, --link\t\tif you replaced the modules, use this option to help you to link modules
+  -s, --size=SIZE\tset the rootfs partition size, do not less than 256m
+  -h, --help\t\tdisplay this help
+"
+        exit
+        ;;
+    -c | --clean)
+        cleanup
+        rm -rf $out_dir
+        tip "finished clean up!"
+        exit
+        ;;
+    -d | --default)
+        info "use default configuration"
+        is_default=true
+        [ $root_size ] || root_size=512
+        ;;
+    -i | --init)
+        link_modules
+        ;;
+    -s | --size)
+        root_size=$2
+        if ! [[ $root_size -ge 256 ]]; then
+            root_size=512
+            error "invalid size $2, use default size 512m"
+        else
+            info "rootfs size: ${2}m"
+            shift
+        fi
+        ;;
+    *)
+        error "invalid option $1"
+        ;;
+    esac
+    shift
+done
+
+cleanup
+get_file_list
+
+[ $is_default ] || choose_firmware
 extract_openwrt_file $work_dir/openwrt/${files[opt]}
 
 extract_armbian_file $work_dir/armbian/$device
 utils
 
-set_rootsize
+[ $root_size ] || set_rootsize
 make_image $root_size
 
 format_image
@@ -278,5 +328,4 @@ cleanup
 
 chmod 777 $out_dir
 
-tip "\n all done, enjoy!"
-
+tip "all done, enjoy!"
