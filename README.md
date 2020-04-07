@@ -2,7 +2,7 @@
 
 # Build OpenWrt Firmware for PHICOMM N1
 
-**找几个人帮忙测试。有网友反馈制作成功之后无法启动，由于目前没有设备，测试不了，另外测试后期一键安装到emmc脚本。有兴趣的加群：[Phicomm N1固件测试交流群](https://shang.qq.com/wpa/qunwpa?idkey=f9af48e72576fd9cdb69690a96a89a3a1a1dfbedc3ae1b9f3174c00886b96477)**
+**找几个人帮忙测试。~~有网友反馈制作成功之后无法启动~~，由于目前没有设备，测试不了，另外测试后期一键安装到emmc脚本。有兴趣的加群：[Phicomm N1固件测试交流群](https://shang.qq.com/wpa/qunwpa?idkey=f9af48e72576fd9cdb69690a96a89a3a1a1dfbedc3ae1b9f3174c00886b96477)**
 
 ## 使用方法
 
@@ -40,7 +40,7 @@
    * `-l, --link`，如果你替换了内核，请使用此参数来帮助你链接内核模块
    * `-s, --size=SIZE`，设置`ROOTFS`分区大小，不要小于256m
    * `-h, --help`，显示帮助信息
-   * 一些示例：<br>
+   * example：<br>
      `sudo ./make -c`，清理文件<br>
      `sudo ./make -d`，使用默认配置<br>
      `sudo ./make -s 256`，将`ROOTFS`分区大小设置为256m<br>
