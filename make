@@ -116,6 +116,8 @@ extract_armbian_file() {
 utils() {
     echo -en "pwm-meson" | tee $root_dir/etc/modules.d/pwm-meson >/dev/null 2>&1
     sed -i '/kmodloader/i"\tulimit -n 51200\n"' $root_dir/etc/init.d/boot
+    sed -i 's/ttyAMA0/ttyAML0/' $root_dir/etc/inittab
+    sed -i 's/ttyS0/tty0/' $root_dir/etc/inittab
 
     mkdir -p $root_dir/boot
     mkdir -p $root_dir/run
