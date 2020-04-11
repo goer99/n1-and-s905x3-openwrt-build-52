@@ -2,7 +2,7 @@
 
 # Build OpenWrt Firmware for PHICOMM N1
 
-**找几个人帮忙测试。~~有网友反馈制作成功之后无法启动~~，由于目前没有设备，测试不了，另外测试后期一键安装到emmc脚本。有兴趣的加群：[Phicomm N1固件测试交流群](https://shang.qq.com/wpa/qunwpa?idkey=f9af48e72576fd9cdb69690a96a89a3a1a1dfbedc3ae1b9f3174c00886b96477)**
+**找几个人帮忙测试。~~有网友反馈制作成功之后无法启动，由于目前没有设备，测试不了，另外测试后期一键安装到emmc脚本。~~有兴趣的加群：[Phicomm N1固件测试交流群](https://shang.qq.com/wpa/qunwpa?idkey=f9af48e72576fd9cdb69690a96a89a3a1a1dfbedc3ae1b9f3174c00886b96477)**
 
 ## 使用方法
 
@@ -50,7 +50,7 @@ endif
 8. 写盘启动，写盘工具推荐 [Etcher](https://github.com/balena-io/etcher/releases/download/v1.5.80/balenaEtcher-Portable-1.5.80.exe)
 
 **注意**：  
-1、待构建的固件格式只支持rootfs.tar.gz、 ext4-factory.img[.gz]、root.ext4[.gz]5种  
+1、待构建的固件格式只支持rootfs.tar.gz、 ext4-factory.img[.gz]、root.ext4[.gz] 5种  
 2、默认不会清理out目录，有需要的手动 `rm` ，或者使用 `sudo ./make -c` 清理  
 3、集成一键安装到emmc脚本，如果你没有照做第二步的内容，请手动添加依赖包：  
 `lsblk parted blkid e2fsprogs dosfstools`  
@@ -60,7 +60,7 @@ endif
 ## 特别说明
 
 * 目录说明
-   * `armbian` ， `armbian` 相关文件
+   * `armbian` ，armbian相关文件
       * `phicomm-n1` ，设备文件夹
          * `root` ，自定义文件夹
          * `boot.tar.gz` ，启动分区相关文件
@@ -84,7 +84,7 @@ endif
 
 * 自定义
    * 使用自定义内核  
-     你可以在Armnbian镜像中提取，并按照目录结构，将文件打包为boot.tar.gz、modules.tar.gz，最后替换armbian/phicomm-n1 目录下的相关文件即可
+     你可以在Armnbian镜像中提取，并按照目录结构，将文件打包为boot.tar.gz、modules.tar.gz，最后替换armbian/phicomm-n1目录下的相关文件即可
 
      **注意**：  
      1、如果Armnbian镜像的BOOT分区下的 uEnv.txt中的FDT参数不是phicomm-n1，则需要你手动更改，不更改则导致无法启动  
