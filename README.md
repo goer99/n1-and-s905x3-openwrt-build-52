@@ -54,7 +54,7 @@ endif
 请在编译时添加依赖包：  
 `lsblk parted blkid e2fsprogs dosfstools`  
 或者在openwrt中安装：  
-`opkg update && opkg install lsblk parted blkid e2fsprogs dosfstools`
+`opkg update && opkg install lsblk parted blkid e2fsprogs dosfstools`  
 一键安装到emmc命令为：  
 `cd /root && ./install.sh`
 
