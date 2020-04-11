@@ -30,9 +30,7 @@ define Device/Phicomm-n1
     fdisk lsblk parted blkid htop lscpu losetup \
     kmod-fs-ext4 kmod-fs-vfat kmod-fs-exfat ntfs-3g \
     e2fsprogs dosfstools ntfsprogs_ntfs-3g \
-    kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
-    kmod-usb-net kmod-usb-net-asix kmod-usb-net-asix-ax88179 \
-    luci-app-netdata luci-app-samba4 luci-app-cifs-mount
+    kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas 
 endef
 ifeq ($(SUBTARGET),64)
   TARGET_DEVICES += Phicomm-n1
