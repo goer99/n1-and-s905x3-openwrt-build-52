@@ -50,8 +50,11 @@ endif
 **注意**：  
 1、待构建的固件格式只支持rootfs.tar.gz、 ext4-factory.img[.gz]、root.ext4[.gz] 5种  
 2、默认不会清理out目录，有需要的手动 `rm` ，或者使用 `sudo ./make -c` 清理  
-3、集成一键安装到emmc脚本，如果你没有照做第二步的内容，请手动添加依赖包：  
+3、集成一键安装到emmc脚本，如果你没有照做第二步的内容，  
+请在编译时添加依赖包：  
 `lsblk parted blkid e2fsprogs dosfstools`  
+或者在openwrt中安装：  
+`opkg update && opkg install lsblk parted blkid e2fsprogs dosfstools`
 一键安装到emmc命令为：  
 `cd /root && ./install.sh`
 
