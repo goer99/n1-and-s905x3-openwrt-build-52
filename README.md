@@ -15,28 +15,6 @@ Target System (QEMU ARM Virtual Machine)  --->
 Subtarget (ARMv8 multiplatform)  --->
 Target Profile (Default)  --->
 ```
-Target Profile默认是Default，通过编辑Makefile文件可以将Default改为Phicomm-n1，即N1的专用配置（包含无线配置）  
-具体方法如下：  
-修改 `target/linux/armvirt/image/Makefile` 文件，在**最后一行之前**加入如下内容：
-``` 
-define Device/Phicomm-n1
-  DEVICE_MODEL := Phicomm-n1
-  DEVICE_PACKAGES := \
-    cypress-firmware-43430-sdio \
-    cypress-nvram-43430-sdio-rpi-3b \
-    cypress-firmware-43455-sdio \
-    cypress-nvram-43455-sdio-rpi-3b-plus \
-    kmod-brcmfmac wpad-basic \
-    fdisk lsblk parted blkid htop lscpu losetup \
-    kmod-fs-ext4 kmod-fs-vfat kmod-fs-exfat ntfs-3g \
-    e2fsprogs dosfstools ntfsprogs_ntfs-3g \
-    kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas 
-endef
-ifeq ($(SUBTARGET),64)
-  TARGET_DEVICES += Phicomm-n1
-endif
-```
-保存完之后，再执行 `make menuconfig` ，你会发现Target Profile中出现了Phicomm-n1，后面就是自行配置要编译的软件包  
 
 3. 克隆仓库到本地  
 `git clone https://github.com/tuanqing/mknop.git` 
@@ -50,12 +28,7 @@ endif
 **注意**：  
 1、待构建的固件格式只支持rootfs.tar.gz、 ext4-factory.img[.gz]、root.ext4[.gz] 5种  
 2、默认不会清理out目录，有需要的手动 `rm` ，或者使用 `sudo ./make -c` 清理  
-3、集成一键安装到emmc脚本，如果你没有照做第二步的内容，  
-请在编译时添加依赖包：  
-`lsblk parted blkid e2fsprogs dosfstools`  
-或者在openwrt中安装：  
-`opkg update && opkg install lsblk parted blkid e2fsprogs dosfstools`  
-一键安装到emmc命令为：  
+3、一键安装到emmc命令为：  
 `cd /root && ./install.sh`
 
 ## 特别说明
