@@ -1,5 +1,7 @@
 #!/bin/sh
 
+opkg install ipk/*.ipk --force-depends
+
 emmc=$(lsblk | grep -oE 'mmcblk[0-9]' | uniq)
 sd=$(lsblk | grep -oE 'sd[a-z]' | uniq)
 
@@ -106,24 +108,8 @@ tar -cf - www | (cd $ins_root && tar -xpf -)
 [ -f init ] && cp -a init $ins_root
 
 cd $ins_root
-echo "create boot"
-mkdir -p boot
-echo "create dev"
-mkdir -p dev
-echo "create mnt"
-mkdir -p mnt
-echo "create overlay"
-mkdir -p overlay
-echo "create proc"
-mkdir -p proc
-echo "create rom"
-mkdir -p rom
-echo "create run"
-mkdir -p run
-echo "create sys"
-mkdir -p sys
-echo "create tmp"
-mkdir -p tmp
+echo "create boot dev mnt overlay proc rom run sys tmp"
+mkdir boot dev mnt overlay proc rom run sys tmp
 
 echo "link lib64"
 ln -sf lib lib64
