@@ -73,8 +73,8 @@ extract_openwrt_file() {
             loop=$(losetup -P -f --show $path)
             [ ! $loop ] && {
                 error "you used a lower version linux, you may try 
-                ${green} apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y 
-                ${red} to fix it, or you can upgrade your system version."
+${green} apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y 
+${red} to fix it, or you can upgrade your system version."
                 exit
             }
             mount_image "rw" ${loop}p2 $mount_dir
@@ -90,7 +90,7 @@ extract_openwrt_file() {
             break
             ;;
         *)
-            error "unsupported firmware format, check your firmware in openwrt folder!\n
+            error "unsupported firmware format, check your firmware in openwrt folder! 
  this script only supported rootfs.tar.gz, ext4-factory.img[.gz], root.ext4[.gz] five format."
             exit
             ;;
@@ -142,8 +142,8 @@ format_image() {
 
     loop=$(losetup -P -f --show $image)
     [ ! $loop ] && {
-        error "you used a lower version linux, you may try:\n
- ${green}apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y\n
+        error "you used a lower version linux, you may try: 
+ ${green}apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y 
  ${white}to fix it, or you can upgrade your system version."
         exit
     }
@@ -245,7 +245,7 @@ set_rootsize() {
     root_size=
 
     while true; do
-        echo && read -p "$(info "input the ROOTFS partition size, default 512m, do not less than 256m\n
+        echo && read -p "$(info "input the ROOTFS partition size, default 512m, do not less than 256m 
  if you don't know what's the means, press enter to keep the default: ")" root_size && echo
         [ $root_size ] || root_size=512
         if [ $root_size -ge 256 ] >/dev/null 2>&1; then
