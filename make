@@ -73,8 +73,8 @@ extract_openwrt_file() {
             loop=$(losetup -P -f --show $path)
             [ ! $loop ] && {
                 error "you used a lower version linux, you may try 
-${green} apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y 
-${red} to fix it, or you can upgrade your system version."
+ ${green}apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y 
+ ${red}to fix it, or you can upgrade your system version."
                 exit
             }
             mount_image "rw" ${loop}p2 $mount_dir
