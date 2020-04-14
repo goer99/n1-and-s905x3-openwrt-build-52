@@ -85,13 +85,26 @@ jobs:
       - name: Build firmware
         run: |
           echo "::set-env name=TZ::Asia/Shanghai"
+          
+          mkdir docker out
           cp lede/bin/targets/*/*/*.tar.gz ./openwrt
-          sudo ./make -d -s 320
           cp lede/.config ./out
+          cp openwrt/*.tar.gz ./docker
+          cp out/.config ./docker
+          
+          sudo ./make -d
+          
           echo "::set-env name=firmware_name::$(date "+%y.%m.%d")-phicomm-n1-openwrt-firmware"
+          echo "::set-env name=docker_firmware_name::$(date "+%y.%m.%d")-phicomm-n1-openwrt-docker-firmware"
 
       - name: Upload firmware
         uses: actions/upload-artifact@master
         with:
           name: ${{ env.firmware_name }}
           path: ./out
+      
+      - name: Upload docker firmware
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ env.docker_firmware_name }}
+          path: ./docker
