@@ -83,9 +83,9 @@ jobs:
           make -j$(nproc) || make -j1 V=s
 
       - name: Build firmware
+        env:
+          TZ: Asia/Shanghai
         run: |
-          echo "::set-env name=TZ::Asia/Shanghai"
-          
           mkdir docker out
           cp lede/bin/targets/*/*/*.tar.gz ./openwrt
           cp lede/.config ./out
