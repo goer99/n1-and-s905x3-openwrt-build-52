@@ -36,6 +36,7 @@ jobs:
       - name: Install feeds
         run: |
           cd lede
+          sed -i '5 s/#//' ./feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
