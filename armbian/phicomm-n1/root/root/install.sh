@@ -1,6 +1,21 @@
 #!/bin/sh
 
-opkg install ipk/*.ipk --force-depends
+# opkg install ipk/*.ipk --force-depends
+if !(lsblk --help) >/dev/null 2>&1; then
+    opkg install ipk/lsblk*.ipk --force-depends
+fi
+if !(blkid --help) >/dev/null 2>&1; then
+    opkg install ipk/*blkid*.ipk --force-depends
+fi
+if !(parted --help) >/dev/null 2>&1; then
+    opkg install ipk/parted*.ipk --force-depends
+fi
+if !(mkfs.fat --help) >/dev/null 2>&1; then
+    opkg install ipk/dosfstools*.ipk --force-depends
+fi
+if !(mke2fs --help) >/dev/null 2>&1; then
+    opkg install ipk/e2fsprogs*.ipk --force-depends
+fi
 
 emmc=$(lsblk | grep -oE 'mmcblk[0-9]' | uniq)
 sd=$(lsblk | grep -oE 'sd[a-z]' | uniq)
