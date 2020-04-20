@@ -87,25 +87,45 @@ jobs:
         env:
           TZ: Asia/Shanghai
         run: |
-          mkdir docker out
           cp lede/bin/targets/*/*/*.tar.gz ./openwrt
           cp lede/.config ./out
-          cp openwrt/*.tar.gz ./docker
-          cp out/.config ./docker
-          
           sudo ./make -d
-          
-          echo "::set-env name=firmware_name::$(date "+%y.%m.%d")-phicomm-n1-openwrt-firmware"
-          echo "::set-env name=docker_firmware_name::$(date "+%y.%m.%d")-phicomm-n1-openwrt-docker-firmware"
 
-      - name: Upload firmware
+          cd out
+          i=0
+          kernels=("4.18.7" "4.19.106" "5.4.20")
+          i=0
+          for x in ${kernels[*]}; do
+            cd $x
+            filename=$(ls)
+            filename=${filename%.*}
+            tar -czvf "$filename.tar.gz" *.img
+            rm -f *.img
+            cd ../
+            echo "::set-env name=firmware_$((++i))::$filename"
+          done
+
+
+      - name: Upload firmware @ kernel 4.18.7
         uses: actions/upload-artifact@master
         with:
-          name: ${{ env.firmware_name }}
-          path: ./out
+          name: ${{ env.firmware_1 }}
+          path: out/4.18.7
       
-      - name: Upload docker firmware
+      - name: Upload firmware @ kernel 4.19.106
         uses: actions/upload-artifact@master
         with:
-          name: ${{ env.docker_firmware_name }}
-          path: ./docker
+          name: ${{ env.firmware_2 }}
+          path: out/4.19.106
+      
+      - name: Upload firmware @ kernel 5.4.20
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ env.firmware_3 }}
+          path: out/5.4.20
+
+      - name: Upload config file
+        uses: actions/upload-artifact@master
+        with:
+          name: .config
+          path: out/.config
