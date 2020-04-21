@@ -88,8 +88,8 @@ jobs:
           TZ: Asia/Shanghai
         run: |
           cp lede/bin/targets/*/*/*.tar.gz ./openwrt
-          cp lede/.config ./out
           sudo ./make -d
+          cp lede/.config ./out
 
           cd out
           i=0
