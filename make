@@ -18,8 +18,7 @@ error() {
 }
 
 error_exit() {
-    error $1
-    exit
+    error $1 && exit
 }
 
 tip() {
@@ -29,7 +28,7 @@ tip() {
 cleanup() {
     [ -d $tmp_dir ] && {
         [ -d "$tmp_dir/mount" ] && {
-            local mounts=$(lsblk | grep -E "$tmp_dir/mount" | grep -oE "(loop[0-9]|loop[0-9][0-9])" | uniq)
+            local mounts=$(lsblk | grep "$tmp_dir/mount" | grep -oE "(loop[0-9]|loop[0-9][0-9])" | uniq)
             for x in ${mounts[*]}; do
                 umount -f /dev/${x}* >/dev/null 2>&1
                 losetup -d "/dev/$x" >/dev/null 2>&1
@@ -56,13 +55,14 @@ extract_openwrt_file() {
             break
             ;;
         gz)
-            if (ls $file_path | grep -E ".tar.gz$") >/dev/null 2>&1; then
-                tar -xf $file_path -C $root_dir
+            if (ls $file_path | grep -q ".tar.gz$"); then
+                tar -xzf $file_path -C $root_dir
                 break
             else
-                gzip -d $file_path
+                gzip -d -k $file_path
                 file_path=${file_path%.*}
                 file_suff=${file_path##*.}
+                del=$file_path
             fi
             ;;
         img)
@@ -70,20 +70,22 @@ extract_openwrt_file() {
             [ ! $loop ] && error_exit "you used a lower version linux, you may try 
  apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y 
  to fix it, or you can upgrade your system version."
-            if !(mount -t ext4 -o rw ${loop}p2 $mount_dir); then
+            if ! (mount -t ext4 -o rw ${loop}p2 $mount_dir); then
                 error_exit "mount image faild!"
             fi
             cp -r $mount_dir/* $root_dir && sync
             umount -f $mount_dir
             losetup -d $loop
+            [ $del ] && rm -f $del
             break
             ;;
         ext4)
-            if !(mount -t ext4 -o rw,loop $file_path $mount_dir); then
+            if ! (mount -t ext4 -o rw,loop $file_path $mount_dir); then
                 error_exit "mount image faild!"
             fi
             cp -r $mount_dir/* $root_dir && sync
             umount -f $mount_dir
+            [ $del ] && rm -f $del
             break
             ;;
         *)
@@ -114,12 +116,12 @@ extract_armbian_file() {
 utils() {
     cd $root_dir
 
-    echo "pwm_meson" >etc/modules.d/pwm-meson
+    echo "pwm_meson" > etc/modules.d/pwm-meson
     sed -i '/kmodloader/i\\tulimit -n 51200\n' etc/init.d/boot
     sed -i 's/ttyAMA0/ttyAML0/' etc/inittab
     sed -i 's/ttyS0/tty0/' etc/inittab
 
-    mkdir -p boot run
+    mkdir -p boot run opt
     chown -R 0:0 ./
 
     cd $work_dir
@@ -129,7 +131,7 @@ make_image() {
     tip "make openwrt image..."
 
     image_name="$device-$kernel-openwrt-firmware"
-    image="$out_dir/$kernel/$(date "+%y.%m.%d-%H%M")-$image_name.img"
+    image="$out_dir/$kernel/$(date "+%y.%m.%d-%H%M%S")-$image_name.img"
 
     [ -d "$out_dir/$kernel" ] || mkdir -p "$out_dir/$kernel"
     fallocate -l $((16 + 128 + root_size))M $image
@@ -148,7 +150,7 @@ format_image() {
     to fix it, or you can upgrade your system version."
 
     mkfs.vfat -n "BOOT" ${loop}p1 >/dev/null 2>&1
-    mke2fs -F -q -t ext4 -L "ROOTFS" ${loop}p2 -m 0 >/dev/null 2>&1
+    mke2fs -F -q -t ext4 -L "ROOTFS" -m 0 ${loop}p2 >/dev/null 2>&1
 }
 
 copy2image() {
@@ -159,10 +161,10 @@ copy2image() {
 
     mkdir -p $boot $root
 
-    if !(mount -t vfat -o rw ${loop}p1 $boot); then
+    if ! (mount -t vfat -o rw ${loop}p1 $boot); then
         error_exit "mount image faild!"
     fi
-    if !(mount -t ext4 -o rw ${loop}p2 $root); then
+    if ! (mount -t ext4 -o rw ${loop}p2 $root); then
         error_exit "mount image faild!"
     fi
 
@@ -253,7 +255,7 @@ choose_files() {
                 break
             else
                 (($i >= 2)) && exit
-                error "input is wrong, try again!"
+                error "input is wrong, try again!\n"
                 sleep 1s
                 let i++
             fi
@@ -264,20 +266,20 @@ choose_files() {
 link_modules() {
     tip "link \"$kernel\" modules..."
 
+    local modules="$tmp_dir/lib/modules/*/"
     kernel_dir="$work_dir/armbian/$device/kernel/$1"
     
     mkdir -p $tmp_dir
     tar -xzf "$kernel_dir/modules.tar.gz" -C $tmp_dir
 
-    local modules="$tmp_dir/lib/modules/*/"
-    if !(ls $modules | grep ".ko") >/dev/null 2>&1; then
+    if ! (ls $modules | grep -q ".ko"); then
         cd $modules
         for x in $(find -name "*.ko"); do
             ln -s $x ./ >/dev/null 2>&1
         done
-        cd $tmp_dir/
+        cd $tmp_dir
         tar -czf modules.tar.gz lib/
-        cp -r modules.tar.gz "$kernel_dir"
+        cp -f modules.tar.gz $kernel_dir
         cd $work_dir
     else
         info "already initialized! don't need \"-l\" next time."
@@ -297,7 +299,7 @@ set_rootsize() {
  if you don't know what's the means, press enter to keep the default: ")" root_size
         [ $root_size ] || root_size=512
         if (($root_size >= 256)) >/dev/null 2>&1; then
-            echo -e " (${root_size}m) \n"
+            echo -e " ( ${root_size}m ) \n"
             break
         else
             (($i >= 2)) && exit
@@ -310,7 +312,7 @@ set_rootsize() {
 
 show_help() {
     echo -e \
-        "
+"
 Usage:
   make [option]\n
 Options:
@@ -350,7 +352,6 @@ while [ "$1" ]; do
         [ $root_size ] || root_size=512
         [ $firmware ] || firmware=${firmwares[0]}
         [ $kernel ] || kernel="all"
-        is_default=true
         ;;
     --firmware)
         show_list "${firmwares[*]}"
@@ -358,10 +359,10 @@ while [ "$1" ]; do
         ;;
     -k)
         kernel=$2
-        if ! [ $kernel ] || ! [ -d "$work_dir/armbian/$device/kernel/$kernel" ]; then
-            [ $kernel = "all" ] && shift || error_exit "invalid kernel \"$2\""
-        else
+        if [ $kernel = "all" ] || [ -d "$work_dir/armbian/$device/kernel/$kernel" ]; then
             shift
+        else
+            error_exit "invalid kernel \"$2\""
         fi
         ;;
     --kernel)
@@ -370,7 +371,7 @@ while [ "$1" ]; do
         ;;
     -l | --link)
         kernel=$2
-        if ! [ $kernel ] || ! [ -d "$work_dir/armbian/$device/kernel/$kernel" ]; then
+        if [ ! $kernel ] || [ ! -d "$work_dir/armbian/$device/kernel/$kernel" ]; then
             choose_kernel
         fi
         link_modules $kernel
@@ -378,10 +379,10 @@ while [ "$1" ]; do
         ;;
     -s | --size)
         root_size=$2
-        if ! [ $root_size ] || (($root_size < 256)) >/dev/null 2>&1; then
-            error_exit "invalid size \"$2\""
-        else
+        if (($root_size >= 256)) >/dev/null 2>&1; then
             shift
+        else
+            error_exit "invalid size \"$2\""
         fi
         ;;
     *)
@@ -393,13 +394,14 @@ done
 
 [ $firmware ] && echo " firmware     ==>  $firmware"
 [ $kernel ] && echo " kernel       ==>  $kernel"
-[ $root_size ] && echo -e " rootfs size  ==>  ${root_size}m\n"
+[ $root_size ] && echo -e " rootfs size  ==>  ${root_size}m"
+[ $firmware ] || [ $kernel ] || [ $root_size ] && echo 
 
 [ $firmware ] || choose_firmware
 [ $kernel ] || choose_kernel
 [ $root_size ] || set_rootsize
 
-[ $kernel = "all" ] || kernels=("$kernel")
+[ $kernel != "all" ] && kernels=("$kernel")
 for x in ${kernels[*]}; do
     kernel=$x
     echo " for \"$kernel\": "

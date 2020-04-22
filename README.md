@@ -66,17 +66,17 @@ Target Profile (Default)  --->
    * `-d, --default`，使用默认配置来构建固件( openwrt下的第一个固件、构建所有内核、ROOTFS分区大小为512m )
    * `--firmware`，显示openwrt文件夹下的所有固件
    * `--kernel`，显示kernel文件夹下的所有内核
-   * `-k=VERSION`，设置内核版本
+   * `-k=VERSION`，设置内核版本，设置为 `all` 将会构架所有内核的固件
    * `-l, --link=[VERSION]`，使用此选项来帮助你链接内核模块
    * `-s, --size=SIZE`，设置ROOTFS分区大小，不要小于256m
    * `-h, --help`，显示帮助信息
    * examples：  
-`sudo ./make -c`，清理文件  
-`sudo ./make -d`，使用默认配置  
-`sudo ./make -k 4.19.106`，将内核版本设置为4.19.106  
-`sudo ./make -s 256`，将ROOTFS分区大小设置为256m  
-`sudo ./make -d -s 256`，使用默认，并将分区大小设置为256m  
-`sudo ./make -d -s 256 -k 4.19.106`，使用默认，并将分区大小设置为256m，内核版本设置为4.19.106  
+   `sudo ./make -c`，清理文件  
+   `sudo ./make -d`，使用默认配置  
+   `sudo ./make -k 4.19.106`，将内核版本设置为 `4.19.106`  
+   `sudo ./make -s 256`，将ROOTFS分区大小设置为256m  
+   `sudo ./make -d -s 256`，使用默认，并将分区大小设置为256m  
+   `sudo ./make -d -s 256 -k 4.19.106`，使用默认，并将分区大小设置为256m，内核版本设置为 `4.19.106 `
 
 * 自定义
    * 使用自定义内核  
