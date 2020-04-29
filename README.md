@@ -64,10 +64,8 @@ Target Profile (Default)  --->
 * 使用参数
    * `-c, --clean`，清理临时文件和输出目录
    * `-d, --default`，使用默认配置来构建固件( openwrt下的第一个固件、构建所有内核、ROOTFS分区大小为512m )
-   * `--firmware`，显示openwrt文件夹下的所有固件
    * `--kernel`，显示kernel文件夹下的所有内核
    * `-k=VERSION`，设置内核版本，设置为 `all` 将会构架所有内核的固件
-   * `-l, --link=[VERSION]`，使用此选项来帮助你链接内核模块
    * `-s, --size=SIZE`，设置ROOTFS分区大小，不要小于256m
    * `-h, --help`，显示帮助信息
    * examples：  
