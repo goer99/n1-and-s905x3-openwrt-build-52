@@ -1,19 +1,19 @@
 #!/bin/sh
 
 # opkg install ipk/*.ipk --force-depends
-if !(lsblk --help) >/dev/null 2>&1; then
+if ! (lsblk --help >/dev/null 2>&1); then
     opkg install ipk/lsblk*.ipk --force-depends
 fi
-if !(blkid --help) >/dev/null 2>&1; then
+if ! (blkid --help >/dev/null 2>&1); then
     opkg install ipk/*blkid*.ipk --force-depends
 fi
-if !(parted --help) >/dev/null 2>&1; then
+if ! (parted --help >/dev/null 2>&1); then
     opkg install ipk/parted*.ipk --force-depends
 fi
-if !(mkfs.fat --help) >/dev/null 2>&1; then
+if ! (mkfs.fat --help >/dev/null 2>&1); then
     opkg install ipk/dosfstools*.ipk --force-depends
 fi
-if !(mke2fs --help) >/dev/null 2>&1; then
+if ! (mke2fs --help >/dev/null 2>&1); then
     opkg install ipk/e2fsprogs*.ipk --force-depends
 fi
 
@@ -45,9 +45,9 @@ fi
 part_boot="${dev_emmc}p1"
 part_root="${dev_emmc}p2"
 
-if ! [ $installed ]; then
+if [ ! $installed ]; then
     echo "backup u-boot"
-    dd if=$dev_emmc of=u-boot-default-aml.img bs=1M count=4
+    dd if=$dev_emmc of=u-boot.img bs=1M count=4
 
     echo "create mbr and partition"
     parted -s $dev_emmc mklabel msdos
@@ -55,8 +55,8 @@ if ! [ $installed ]; then
     parted -s $dev_emmc mkpart primary ext4 1213M 100%
 
     echo "restore u-boot"
-    dd if=u-boot-default-aml.img of=$dev_emmc conv=fsync bs=1 count=442
-    dd if=u-boot-default-aml.img of=$dev_emmc conv=fsync bs=512 skip=1 seek=1
+    dd if=u-boot.img of=$dev_emmc conv=fsync bs=1 count=442
+    dd if=u-boot.img of=$dev_emmc conv=fsync bs=512 skip=1 seek=1
 
     sync
 
@@ -123,8 +123,8 @@ tar -cf - www | (cd $ins_root && tar -xpf -)
 [ -f init ] && cp -a init $ins_root
 
 cd $ins_root
-echo "create boot dev mnt overlay proc rom run sys tmp"
-mkdir boot dev mnt overlay proc rom run sys tmp
+echo "create boot dev mnt opt overlay proc rom run sys tmp"
+mkdir boot dev mnt opt overlay proc rom run sys tmp
 
 echo "link lib64"
 ln -sf lib lib64
@@ -132,13 +132,14 @@ echo "link var"
 ln -sf tmp var
 
 echo "copy fstab"
-cp -a /root/fstab etc
+cp -a /root/fstab ./etc
 
 sed -i 's/ROOTFS/ROOT_EMMC/' etc/config/fstab
 sed -i 's/BOOT/BOOT_EMMC/' etc/config/fstab
 
-rm root/install.sh
-rm root/fstab
+rm -rf ipk
+rm -f root/fstab
+rm -f root/install.sh
 
 cd /
 sync
