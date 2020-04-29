@@ -1,6 +1,6 @@
 # 自动构建斐讯N1 OpenWrt固件脚本
 
-# Automatic Build OpenWrt Firmware for PHICOMM N1
+# Automatically Build OpenWrt Firmware for PHICOMM N1
 
 **制作脚本已部署到Github Action，真正实现一栈式全自动构建，每天早上六点准时为你构建，无须自行制作，下载即可用**
 
@@ -13,30 +13,29 @@
 
 1. Linux环境，推荐使用Ubuntu 18.04 LTS
 2. 编译好待构建的OpenWrt固件，不会的自行科普 [Lean's OpenWrt source](https://github.com/coolsnowwolf/lede "Lean's OpenWrt source")  
-
-编译N1固件的配置如下：
-``` 
-Target System (QEMU ARM Virtual Machine)  --->
-Subtarget (ARMv8 multiplatform)  --->
-Target Profile (Default)  --->
-```
+   编译N1固件的配置如下：
+   ``` 
+   Target System (QEMU ARM Virtual Machine)  --->
+   Subtarget (ARMv8 multiplatform)  --->
+   Target Profile (Default)  --->
+   ```
 
 3. 克隆仓库到本地  
-`git clone https://github.com/tuanqing/mknop.git` 
+   `git clone https://github.com/tuanqing/mknop.git` 
 4. 将你编译好的固件拷贝到OpenWrt目录( 可以复制多个固件到此 )
 5. 使用sudo执行脚本  
-`sudo ./make` 
+   `sudo ./make` 
 6. 按照提示操作，如，选择你要制作的固件、选择内核版本、设置ROOTFS分区大小等  
    如果你不了解这些设置项，请直接回车即可，或者直接执行  
    `sudo ./make -d`
 7. 等待构建完成，默认输出文件夹为out
-8. 写盘启动，写盘工具推荐 [Etcher](https://github.com/balena-io/etcher/releases/download/v1.5.80/balenaEtcher-Portable-1.5.80.exe)
+8. 写盘启动，写盘工具推荐 [Etcher](https://www.balena.io/etcher/)
 
 **注意**：  
 1、待构建的固件格式只支持rootfs.tar[.gz]、 ext4-factory.img[.gz]、root.ext4[.gz] 6种，推荐使用rootfs.tar.gz格式  
-2、默认不会清理out目录，有需要的手动 `rm` ，或者使用 `sudo ./make -c` 清理  
+2、默认不会清理out目录，有需要的手动删除，或者使用 `sudo ./make -c` 清理  
 3、一键安装到emmc命令为：  
-`cd /root && ./install.sh`
+   `cd /root && ./install.sh`
 
 ## 特别说明
 
@@ -78,7 +77,7 @@ Target Profile (Default)  --->
 
 * 自定义
    * 使用自定义内核  
-     参照内核文件夹( armbian/phicomm-n1/kernel/xxx )下的文件提取kernel.tar.gz、modules.tar.gz
+     参照内核文件夹( `armbian/phicomm-n1/kernel/xxx` )下的文件提取kernel.tar.gz、modules.tar.gz
 
    * 添加自定义文件  
       向armbian/phicomm-n1/root目录添加你的文件
