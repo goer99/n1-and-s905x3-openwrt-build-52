@@ -51,13 +51,14 @@ jobs:
               cypress-nvram-43430-sdio-rpi-3b \
               cypress-firmware-43455-sdio \
               cypress-nvram-43455-sdio-rpi-3b-plus \
-              kmod-brcmfmac wpad-basic htop lscpu \
-              fdisk lsblk parted blkid losetup \
+              kmod-brcmfmac wpad-basic \
+              htop lscpu iperf3 fdisk lsblk parted blkid losetup \
               kmod-fs-ext4 kmod-fs-vfat kmod-fs-exfat ntfs-3g \
               e2fsprogs dosfstools ntfsprogs_ntfs-3g \
               kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
               kmod-usb-net kmod-usb-net-asix kmod-usb-net-asix-ax88179 \
-              luci-app-netdata luci-app-samba4 luci-app-cifs-mount
+              luci-app-netdata luci-app-samba4 luci-app-cifs-mount \
+              luci-app-dockerman
           endef
           ifeq ($(SUBTARGET),64)
             TARGET_DEVICES += Phicomm-n1
@@ -75,6 +76,7 @@ jobs:
           EOF
 
           make defconfig
+          ./scripts/feeds update -a
           cat .config
 
       - name: Compile openwrt
@@ -89,7 +91,7 @@ jobs:
         run: |
           cp lede/bin/targets/*/*/*.tar.gz ./openwrt
           sudo ./make -d
-          cp lede/.config ./out
+          cp lede/.config out/config.seed
 
           cd out
           i=0
@@ -98,7 +100,7 @@ jobs:
             cd $x
             filename=$(ls)
             filename=${filename%.*}
-            tar -czvf "$filename.tar.gz" *.img
+            tar -czf "$filename.tar.gz" *.img
             rm -f *.img
             cd ../
             echo "::set-env name=firmware_$((++i))::$filename"
@@ -125,5 +127,5 @@ jobs:
       - name: Upload config file
         uses: actions/upload-artifact@master
         with:
-          name: .config
-          path: out/.config
+          name: config
+          path: out/config.seed
