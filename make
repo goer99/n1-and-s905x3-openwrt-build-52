@@ -316,7 +316,7 @@ while [ "$1" ]; do
     -k)
         kernel=$2
         kernel_dir="./armbian/$device/kernel/$kernel"
-        if [ $kernel = "all" ] || [ -d $kernel_dir ]; then
+        if [ $kernel = "all" ] >/dev/null 2>&1 || [ -f "$kernel_dir/kernel.tar.gz" ]; then
             shift
         else
             error "invalid kernel \"$2\"" && exit 1
