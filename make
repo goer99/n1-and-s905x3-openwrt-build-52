@@ -27,7 +27,7 @@ loop_setup() {
 cleanup() {
     [ -d "$tmp/mount" ] && {
         local mounts=$(grep "$tmp/mount" /proc/mounts | grep -oE "(loop[0-9]|loop[0-9][0-9])" | sort | uniq)
-        for x in ${mounts[*]}; do
+        for x in $mounts; do
             umount -f /dev/${x}* >/dev/null 2>&1
             losetup -d "/dev/$x" >/dev/null 2>&1
         done
@@ -42,7 +42,6 @@ extract_openwrt() {
     root="$tmp/root"
 
     mkdir -p $mount $root
-
     while true; do
         case "$suffix" in
         tar)
@@ -109,6 +108,7 @@ extract_armbian() {
 
 utils() {
     cd $root
+    # add other operations here 👇
 
     echo "pwm_meson" > etc/modules.d/pwm-meson
     sed -i '/kmodloader/i\\tulimit -n 51200\n' etc/init.d/boot
@@ -122,8 +122,8 @@ utils() {
 }
 
 make_image() {
-    image_name=$(eval "echo $image_name")
-    image="$out/$kernel/$(date "+%y.%m.%d-%H%M%S")-$image_name.img"
+    image_name="$(date "+%y.%m.%d-%H%M%S")-$(eval "echo $image_name")"
+    image="$out/$kernel/$image_name.img"
 
     [ -d "$out/$kernel" ] || mkdir -p "$out/$kernel"
     fallocate -l $((16 + 128 + rootsize))M $image
@@ -146,7 +146,6 @@ copy2image() {
     local rootfs="$mount/root"
 
     mkdir -p $bootfs $rootfs
-
     if ! (mount -t vfat -o rw ${loop}p1 $bootfs); then
         error "mount image faild!" && exit 1
     fi
@@ -186,9 +185,7 @@ get_kernels() {
     [ -d $kernel_root ] && {
         cd $kernel_root
         for x in $(ls ./); do
-            if [ -f "$x/kernel.tar.gz" ] && [ -f "$x/modules.tar.gz" ]; then
-                kernels[i++]=$x
-            fi
+            [[ -f "$x/kernel.tar.gz" && -f "$x/modules.tar.gz" ]] && kernels[i++]=$x
         done
         cd $work
     }
@@ -211,7 +208,6 @@ show_list() {
 choose_firmware() {
     echo " firmware: "
     show_list "${firmwares[*]}"
-
     choose_files ${#firmwares[*]} "firmware"
     firmware=${firmwares[opt]}
     tag $firmware && echo
@@ -220,7 +216,6 @@ choose_firmware() {
 choose_kernel() {
     echo " kernel: "
     show_kernels
-
     choose_files ${#kernels[*]} "kernel"
     kernel=${kernels[opt]}
     tag $kernel && echo
@@ -290,7 +285,6 @@ EOF
 if (($UID != 0)); then
     error "please run this script as root!" && exit 1
 fi
-
 work=$(pwd)
 
 cleanup
@@ -358,7 +352,6 @@ for x in ${kernels[*]}; do
     extract_openwrt
     process "extract armbian files..."
     extract_armbian
-
     utils
 
     process "make openwrt image..."
