@@ -3,7 +3,7 @@
 tmp="./tmp"
 out="./out"
 device="phicomm-n1" # don't modify it
-image_name='$device-v$kernel-openwrt-firmware'
+image_name='$device-k$kernel-openwrt-firmware'
 
 tag() {
     echo -e " \033[1;42m$1\033[0m"
@@ -122,8 +122,7 @@ utils() {
 }
 
 make_image() {
-    image_name="$(date "+%y.%m.%d-%H%M%S")-$(eval "echo $image_name")"
-    image="$out/$kernel/$image_name.img"
+    image="$out/$kernel/$(date "+%y.%m.%d-%H%M%S")-$(eval "echo $image_name").img"
 
     [ -d "$out/$kernel" ] || mkdir -p "$out/$kernel"
     fallocate -l $((16 + 128 + rootsize))M $image
