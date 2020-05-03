@@ -10,8 +10,7 @@ tag() {
 }
 
 process() {
-    [ $kernel ] && tag $kernel
-    echo -e " \033[32m$1\033[0m"
+    echo -e "$(tag $kernel) \033[32m$1\033[0m $2"
 }
 
 error() {
@@ -298,7 +297,7 @@ while [ "$1" ]; do
     -c | --clean)
         cleanup
         rm -rf $out
-        process "clean up 👌"
+        echo -e " \033[32mclean up\033[0m 👌"
         exit
         ;;
     -d | --default)
@@ -357,7 +356,7 @@ for x in ${kernels[*]}; do
     format_image
     process "copy files to image "
     copy2image
-    process "generate success 😘"
+    process "generate success" 😘
 } &
 done
 
