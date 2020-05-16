@@ -92,7 +92,7 @@ mount -t vfat $part_boot $ins_boot
 rm -rf $ins_boot/*
 
 process "copy bootable file..."
-grep -q 'BOOT' /proc/mounts || mount -t vfat ${dev_sd}1 /boot
+grep -q '/boot' /proc/mounts || mount -t vfat ${dev_sd}1 /boot
 cp -r /boot/* $ins_boot
 sync
 
@@ -151,9 +151,9 @@ cp -a /root/fstab ./etc
 sed -i 's/ROOTFS/ROOT_EMMC/' etc/config/fstab
 sed -i 's/BOOT/BOOT_EMMC/' etc/config/fstab
 
-rm -rf ipk
+rm -rf root/ipk
 rm -f root/fstab
-rm -f root/install.sh
+rm -f root/*.sh
 
 cd /
 sync
