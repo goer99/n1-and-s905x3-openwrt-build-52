@@ -36,6 +36,8 @@ jobs:
       - name: Install feeds
         run: |
           cd lede
+          sed -i -e '/luci/s/^/#/' ./feeds.conf.default
+          sed -i '/luci/a\src-git luci https://github.com/Lienol/openwrt-luci.git;dev-18.06' ./feeds.conf.default
           sed -i '5 s/#//' ./feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
@@ -57,8 +59,7 @@ jobs:
               e2fsprogs dosfstools ntfsprogs_ntfs-3g \
               kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
               kmod-usb-net kmod-usb-net-asix kmod-usb-net-asix-ax88179 \
-              luci-app-netdata luci-app-samba4 luci-app-cifs-mount \
-              luci-app-dockerman
+              luci-app-netdata luci-app-samba4 luci-app-dockerman
           endef
           ifeq ($(SUBTARGET),64)
             TARGET_DEVICES += Phicomm-n1
