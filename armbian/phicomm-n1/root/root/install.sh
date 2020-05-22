@@ -8,6 +8,30 @@ error() {
     echo -e "\033[1;31m Error:\033[0m $1"
 }
 
+
+process "dependency check..."
+# opkg install ipk/*.ipk --force-depends
+if ! (lsblk --help >/dev/null 2>&1); then
+    echo "  - install lsblk..."
+    opkg install ipk/lsblk*.ipk --force-depends
+fi
+if ! (blkid --help >/dev/null 2>&1); then
+    echo "  - install blkid..."
+    opkg install ipk/*blkid*.ipk --force-depends
+fi
+if ! (parted --help >/dev/null 2>&1); then
+    echo "  - install parted..."
+    opkg install ipk/parted*.ipk --force-depends
+fi
+if ! (mkfs.fat --help >/dev/null 2>&1); then
+    echo "  - install dosfstools..."
+    opkg install ipk/dosfstools*.ipk --force-depends
+fi
+if ! (mke2fs -V >/dev/null 2>&1); then
+    echo "  - install e2fsprogs..."
+    opkg install ipk/e2fsprogs*.ipk --force-depends
+fi
+
 emmc=$(lsblk | grep -oE 'mmcblk[0-9]' | sort | uniq)
 sd=$(lsblk | grep -oE 'sd[a-z]' | sort | uniq)
 [ $emmc ] || {
@@ -28,24 +52,7 @@ dev_sd="/dev/$sd"
 
 echo " emmc: $dev_emmc"
 echo " usb:  $dev_sd"
-
-process "dependency check..."
-# opkg install ipk/*.ipk --force-depends
-if ! (lsblk --help >/dev/null 2>&1); then
-    opkg install ipk/lsblk*.ipk --force-depends
-fi
-if ! (blkid --help >/dev/null 2>&1); then
-    opkg install ipk/*blkid*.ipk --force-depends
-fi
-if ! (parted --help >/dev/null 2>&1); then
-    opkg install ipk/parted*.ipk --force-depends
-fi
-if ! (mkfs.fat --help >/dev/null 2>&1); then
-    opkg install ipk/dosfstools*.ipk --force-depends
-fi
-if ! (mke2fs -V >/dev/null 2>&1); then
-    opkg install ipk/e2fsprogs*.ipk --force-depends
-fi
+echo ""
 
 if (blkid -L "BOOT_EMMC" && blkid -L "ROOT_EMMC") >/dev/null 2>&1; then
     installed=true
@@ -137,7 +144,7 @@ tar -cf - www | (cd $ins_root && tar -xpf -)
 [ -f init ] && cp -a init $ins_root
 
 cd $ins_root
-echo "  - create boot dev mnt opt overlay proc rom run sys tmp..."
+# echo "  - create boot dev mnt opt overlay proc rom run sys tmp..."
 mkdir boot dev mnt opt overlay proc rom run sys tmp
 
 echo "  - link lib64..."

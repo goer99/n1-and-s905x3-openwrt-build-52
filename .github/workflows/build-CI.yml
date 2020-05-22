@@ -8,6 +8,9 @@ on:
     - cron: '0 22 * * *'
   repository_dispatch:
     types: run
+    
+env:
+  TZ: Asia/Shanghai
 
 jobs:
   build:
@@ -36,9 +39,12 @@ jobs:
       - name: Install feeds
         run: |
           cd lede
-          sed -i -e '/luci/s/^/#/' ./feeds.conf.default
-          sed -i '/luci/a\src-git luci https://github.com/Lienol/openwrt-luci.git;dev-18.06' ./feeds.conf.default
           sed -i '5 s/#//' ./feeds.conf.default
+          sed -i '2 s/^/#/' ./feeds.conf.default
+          sed -i '2 a\src-git luci https://github.com/Lienol/openwrt-luci.git;dev-18.06' ./feeds.conf.default
+          svn co https://github.com/Lienol/openwrt-package/trunk/lienol/luci-theme-bootstrap-mod package/luci-theme-bootstrap-mod
+          git clone https://github.com/tuanqing/bootstrap-mod
+          git apply bootstrap-mod/patch/*.patch --directory=package/luci-theme-bootstrap-mod
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
@@ -59,7 +65,8 @@ jobs:
               e2fsprogs dosfstools ntfsprogs_ntfs-3g \
               kmod-usb-storage kmod-usb-storage-extras kmod-usb-storage-uas \
               kmod-usb-net kmod-usb-net-asix kmod-usb-net-asix-ax88179 \
-              luci-app-netdata luci-app-samba4 luci-app-dockerman
+              luci-app-samba4 luci-app-cifs-mount luci-app-dockerman \
+              luci-theme-bootstrap-mod
           endef
           ifeq ($(SUBTARGET),64)
             TARGET_DEVICES += Phicomm-n1
@@ -87,8 +94,6 @@ jobs:
           make -j$(nproc) || make -j1 V=s
 
       - name: Build firmware
-        env:
-          TZ: Asia/Shanghai
         run: |
           cp lede/bin/targets/*/*/*.tar.gz ./openwrt
           sudo ./make -d
@@ -101,8 +106,7 @@ jobs:
             cd $x
             filename=$(ls)
             filename=${filename%.*}
-            tar -czf "$filename.tar.gz" *.img
-            rm -f *.img
+            gzip *.img
             cd ../
             echo "::set-env name=firmware_$((++i))::$filename"
           done

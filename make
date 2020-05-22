@@ -6,11 +6,11 @@ device="phicomm-n1" # don't modify it
 image_name='$device-k$kernel-openwrt-firmware'
 
 tag() {
-    echo -en " [ \033[1;32m$1\033[0m ]"
+    echo -e " [ \033[1;32m$1\033[0m ]"
 }
 
 process() {
-    echo -e "$(tag $kernel) \033[32m$1\033[0m $2"
+    echo -e " [ \033[1;32m$kernel\033[0m ] \033[32m$1\033[0m $2"
 }
 
 error() {
@@ -21,7 +21,7 @@ loop_setup() {
     loop=$(losetup -P -f --show "$1")
     [ $loop ] || {
         error "you used a lower version linux, you may try 
- \b$(tag "sudo apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y")
+ [ \033[1;32msudo apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y\033[0m ]
  to fix it, or you can upgrade your system version." && exit 1
     }
 }
@@ -165,9 +165,6 @@ get_firmwares() {
         done
     }
     IFS=$IFS_old
-    if ((${#firmwares[*]} == 0)); then
-        error "no file in openwrt folder!" && exit 1
-    fi
 }
 
 get_kernels() {
@@ -185,13 +182,14 @@ get_kernels() {
         cd $work
     }
     IFS=$IFS_old
-    if ((${#kernels[*]} == 0)); then
-        error "no file in kernel folder!" && exit 1
-    fi
 }
 
 show_kernels() {
-    show_list "${kernels[*]}"
+    if ((${#kernels[*]} == 0)); then
+        error "no file in kernel folder!" && exit 1
+    else
+        show_list "${kernels[*]}"
+    fi
 }
 
 show_list() {
@@ -206,7 +204,7 @@ choose_firmware() {
     show_list "${firmwares[*]}"
     choose_files ${#firmwares[*]} "firmware"
     firmware=${firmwares[opt]}
-    tag $firmware && echo -e '\n'
+    tag $firmware && echo 
 }
 
 choose_kernel() {
@@ -214,7 +212,7 @@ choose_kernel() {
     show_kernels
     choose_files ${#kernels[*]} "kernel"
     kernel=${kernels[opt]}
-    tag $kernel && echo -e '\n'
+    tag $kernel && echo 
 }
 
 choose_files() {
@@ -250,7 +248,7 @@ set_rootsize() {
  if you don't know what this means, press Enter to keep the default: " rootsize
         [ $rootsize ] || rootsize=512
         if (($rootsize >= 256)) >/dev/null 2>&1; then
-            tag $rootsize && echo -e '\n'
+            tag $rootsize && echo 
             break
         else
             ((i++ >= 2)) && exit 1
@@ -332,10 +330,17 @@ while [ "$1" ]; do
     shift
 done
 
+if ((${#firmwares[*]} == 0)); then
+    error "no file in openwrt folder!" && exit 1
+fi
+if ((${#kernels[*]} == 0)); then
+    error "no file in kernel folder!" && exit 1
+fi
+
 [ $firmware ] && echo " firmware   ==>   $firmware"
 [ $kernel ] && echo " kernel     ==>   $kernel"
 [ $rootsize ] && echo " rootsize   ==>   $rootsize"
-[ $firmware ] || [ $kernel ] || [ $rootsize ] && echo
+[ $firmware ] || [ $kernel ] || [ $rootsize ] && echo 
 
 [ $firmware ] || choose_firmware
 [ $kernel ] || choose_kernel
@@ -364,4 +369,3 @@ wait
 
 cleanup
 chmod -R 777 $out
-
