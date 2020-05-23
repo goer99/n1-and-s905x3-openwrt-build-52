@@ -8,28 +8,27 @@ error() {
     echo -e "\033[1;31m Error:\033[0m $1"
 }
 
-
 process "dependency check..."
 # opkg install ipk/*.ipk --force-depends
 if ! (lsblk --help >/dev/null 2>&1); then
     echo "  - install lsblk..."
-    opkg install ipk/lsblk*.ipk --force-depends
+    opkg install ipk/lsblk*.ipk --nodeps
 fi
 if ! (blkid --help >/dev/null 2>&1); then
     echo "  - install blkid..."
-    opkg install ipk/*blkid*.ipk --force-depends
+    opkg install ipk/*blkid*.ipk --nodeps
 fi
 if ! (parted --help >/dev/null 2>&1); then
     echo "  - install parted..."
-    opkg install ipk/parted*.ipk --force-depends
+    opkg install ipk/parted*.ipk --nodeps
 fi
 if ! (mkfs.fat --help >/dev/null 2>&1); then
     echo "  - install dosfstools..."
-    opkg install ipk/dosfstools*.ipk --force-depends
+    opkg install ipk/dosfstools*.ipk --nodeps
 fi
 if ! (mke2fs -V >/dev/null 2>&1); then
     echo "  - install e2fsprogs..."
-    opkg install ipk/e2fsprogs*.ipk --force-depends
+    opkg install ipk/e2fsprogs*.ipk --nodeps
 fi
 
 emmc=$(lsblk | grep -oE 'mmcblk[0-9]' | sort | uniq)
