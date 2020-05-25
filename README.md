@@ -1,5 +1,4 @@
 # 自动构建斐讯N1 OpenWrt固件脚本
-
 # Automatically Build OpenWrt Firmware for PHICOMM N1
 
 **制作脚本已部署到Github Action，真正实现一栈式全自动构建，每天早上六点准时为你构建，无须自行制作，下载即可用**
@@ -21,31 +20,27 @@
    ```
 
    **注意：  
-   一键安装到emmc脚本已迁移至openwrt package，解决需要自选依赖的问题。请使用方法如下，悉知！！**
+   一键安装到emmc脚本已迁移至openwrt package，解决需要自选依赖的问题。使用方法如下，悉知！！**
 
    **用法**：  
    0、如果使用官方或其他源码，可能会缺少parted这个包，执行下面的命令从Lean的仓库中checkout  
-     &nbsp; &nbsp; `svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/parted package/parted`
-   
+      &nbsp; &nbsp; &nbsp; `svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/parted package/parted`  
    1、`git clone https://github.com/tuanqing/install-program package/install-program`  
    2、执行 `make menuconfig` ，选中Utilities下的install-program
-   ``` 
-   Utilities  --->  
-      <*> install-program
-   ```
+      ``` 
+      Utilities  --->  
+         <*> install-program
+      ```
    3、编译完成之后使用本源码制作镜像写入U盘启动，之后执行 `n1-install` 即可安装到emmc
 
 3. 克隆仓库到本地  
    `git clone https://github.com/tuanqing/mknop` 
-
 4. 将你编译好的固件拷贝到openwrt目录( 可以复制多个固件 )
 5. 使用sudo执行脚本  
    `sudo ./make` 
-
 6. 按照提示操作，如，选择你要制作的固件、选择内核版本、设置ROOTFS分区大小等  
    如果你不了解这些设置项，请直接回车即可，或者直接执行  
    `sudo ./make -d` 
-
 7. 等待构建完成，默认输出文件夹为out
 8. 写盘启动，写盘工具推荐 [Etcher](https://www.balena.io/etcher/)
 
