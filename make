@@ -20,9 +20,8 @@ error() {
 loop_setup() {
     loop=$(losetup -P -f --show "$1")
     [ $loop ] || {
-        error "you used a lower version linux, you may try 
- [ \033[1;32msudo apt-get install util-linux=2.31.1-0.4ubuntu3.6 -y\033[0m ]
- to fix it, or you can upgrade your system version." && exit 1
+        error "you used a lower version linux, 
+ please update the util-linux package or upgrade your system." && exit 1
     }
 }
 
@@ -30,8 +29,8 @@ cleanup() {
     local mounts=$(grep "$tmp/.*/mount" /proc/mounts | grep -oE "(loop[0-9]|loop[0-9][0-9])" | sort | uniq)
 
     for x in $mounts; do
-        umount -f /dev/${x}* >/dev/null 2>&1
-        losetup -d "/dev/$x" >/dev/null 2>&1
+        umount -f /dev/${x}* 2>/dev/null
+        losetup -d "/dev/$x" 2>/dev/null
     done
     rm -rf $tmp
 }
@@ -80,8 +79,8 @@ extract_openwrt() {
             break
             ;;
         *)
-            error "unsupported firmware format, check your firmware in openwrt folder! 
- this script only supported rootfs.tar[.gz], ext4-factory.img[.gz], root.ext4[.gz] six format." && exit 1
+            error "unsupported firmware format, this script only support 
+ rootfs.tar[.gz], ext4-factory.img[.gz], root.ext4[.gz] six format." && exit 1
             ;;
         esac
     done
@@ -91,6 +90,7 @@ extract_openwrt() {
 
 extract_armbian() {
     kernel_dir="./armbian/$device/kernel/$kernel"
+    root_dir="./armbian/$device/root"
     boot="$tmp/$kernel/boot"
 
     mkdir -p $boot
@@ -98,14 +98,14 @@ extract_armbian() {
     tar -xzf "$kernel_dir/../../firmware.tar.gz" -C $root
     tar -xzf "$kernel_dir/kernel.tar.gz" -C $boot
     tar -xzf "$kernel_dir/modules.tar.gz" -C $root
-    cp -r ./armbian/$device/root/* $root
+    [ `ls $root_dir | wc -w` != 0 ] && cp -r $root_dir/* $root
 }
 
 utils() {
     cd $root
     # add other operations here 👇
 
-    echo "pwm_meson" > etc/modules.d/pwm-meson
+    echo 'pwm_meson' > etc/modules.d/pwm-meson
     sed -i '/kmodloader/i\\tulimit -n 51200\n' etc/init.d/boot
     sed -i 's/ttyAMA0/ttyAML0/' etc/inittab
     sed -i 's/ttyS0/tty0/' etc/inittab
@@ -220,14 +220,14 @@ choose_files() {
     local type=$2
     opt=
 
-    if (($len == 1)); then
+    if ((len == 1)); then
         opt=0
     else
         i=0
         while true; do
             echo && read -p " select the $type above and press Enter to select the first one: " opt
             [ $opt ] || opt=1
-            if (($opt >= 1 && $opt <= $len)) >/dev/null 2>&1; then
+            if ((opt >= 1 && opt <= len)) 2>/dev/null; then
                 let opt--
                 break
             else
@@ -245,9 +245,9 @@ set_rootsize() {
 
     while true; do
         read -p " input the the rootfs partition size, defaults to 512m, do not less than 256m
- if you don't know what this means, press Enter to keep the default: " rootsize
+ if you don't know what this means, press Enter to keep default: " rootsize
         [ $rootsize ] || rootsize=512
-        if (($rootsize >= 256)) >/dev/null 2>&1; then
+        if ((rootsize >= 256)) 2>/dev/null; then
             tag $rootsize && echo 
             break
         else
@@ -266,7 +266,7 @@ Usage:
 
 Options:
   -c, --clean           clean up the output and temporary directories
-  -d, --default         use the default configuration, which means that the first firmware in the "openwrt" directory is used, the kernel version is "all", and the rootfs partition size is 512m
+  -d, --default         use the default configuration, which means that use the first firmware in the "openwrt" directory, the kernel version is "all", and the rootfs partition size is 512m
   -k=VERSION            set the kernel version, which must be in the "kernel" directory, set to "all" will build all the kernel version
   --kernel              show all kernel version in "kernel" directory
   -s, --size=SIZE       set the rootfs partition size, do not less than 256m
@@ -276,7 +276,7 @@ EOF
 }
 
 ##
-if (($UID != 0)); then
+if ((UID != 0)); then
     error "please run this script as root!" && exit 1
 fi
 
@@ -306,7 +306,7 @@ while [ "$1" ]; do
     -k)
         kernel=$2
         kernel_dir="./armbian/$device/kernel/$kernel"
-        if [ $kernel = "all" ] >/dev/null 2>&1 || [ -f "$kernel_dir/kernel.tar.gz" ]; then
+        if [ $kernel = "all" ] 2>/dev/null || [ -f "$kernel_dir/kernel.tar.gz" ]; then
             shift
         else
             error "invalid kernel \"$2\" 🙄" && exit 1
@@ -317,7 +317,7 @@ while [ "$1" ]; do
         ;;
     -s | --size)
         rootsize=$2
-        if (($rootsize >= 256)) >/dev/null 2>&1; then
+        if ((rootsize >= 256)) 2>/dev/null; then
             shift
         else
             error "invalid size \"$2\" 🙄" && exit 1

@@ -1,9 +1,6 @@
 name: N1-OpenWrt-CI
 
 on:
-  # push:
-  #   branches:
-  #     - master
   schedule:
     - cron: '0 22 * * *'
   repository_dispatch:
@@ -30,8 +27,6 @@ jobs:
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
 
-          df -hT
-
       - name: Clone Lean's openwrt
         run: |
           git clone https://github.com/coolsnowwolf/lede
@@ -39,18 +34,26 @@ jobs:
       - name: Install feeds
         run: |
           cd lede
+
+          # helloworld
           sed -i '5 s/#//' ./feeds.conf.default
+          # replace Lienol's luci
           sed -i '2 s/^/#/' ./feeds.conf.default
           sed -i '2 a\src-git luci https://github.com/Lienol/openwrt-luci.git;dev-18.06' ./feeds.conf.default
+          # luci-theme-bootstrap-mod & css patch
           svn co https://github.com/Lienol/openwrt-package/trunk/lienol/luci-theme-bootstrap-mod package/luci-theme-bootstrap-mod
           git clone https://github.com/tuanqing/bootstrap-mod
           git apply bootstrap-mod/patch/*.patch --directory=package/luci-theme-bootstrap-mod
+          # n1 install program
+          git clone https://github.com/tuanqing/install-program package/install-program
+
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
       - name: Make config
         run: |
           cd lede
+
           sed -i '$d' target/linux/armvirt/image/Makefile
           echo -e 'define Device/Phicomm-n1
           DEVICE_MODEL := Phicomm-n1
@@ -59,7 +62,7 @@ jobs:
               cypress-nvram-43430-sdio-rpi-3b \
               cypress-firmware-43455-sdio \
               cypress-nvram-43455-sdio-rpi-3b-plus \
-              kmod-brcmfmac wpad-basic \
+              kmod-brcmfmac wpad-basic bash vim install-program \
               htop lscpu iperf3 fdisk lsblk parted blkid losetup \
               kmod-fs-ext4 kmod-fs-vfat kmod-fs-exfat ntfs-3g \
               e2fsprogs dosfstools ntfsprogs_ntfs-3g \
@@ -73,8 +76,6 @@ jobs:
           endif\n
           $(eval $(call BuildImage))' >> target/linux/armvirt/image/Makefile
 
-          cat target/linux/armvirt/image/Makefile
-
           cat > .config << EOF
           CONFIG_TARGET_armvirt=y
           CONFIG_TARGET_armvirt_64=y
@@ -85,7 +86,6 @@ jobs:
 
           make defconfig
           ./scripts/feeds update -a
-          cat .config
 
       - name: Compile openwrt
         run: |
