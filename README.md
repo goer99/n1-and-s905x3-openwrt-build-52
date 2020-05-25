@@ -25,10 +25,10 @@
 
    **用法**：  
    0、如果使用官方或其他源码，可能会缺少parted这个包，执行下面的命令从Lean的仓库中checkout  
-      `svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/parted package/parted`
+     &nbsp; &nbsp; `svn co https://github.com/coolsnowwolf/lede/trunk/package/lean/parted package/parted`
    
-   1、 `git clone https://github.com/tuanqing/install-program package/install-program`  
-   2、执行 `make menuconfig` ，选中 `Utilities` 下的 `install-program` 
+   1、`git clone https://github.com/tuanqing/install-program package/install-program`  
+   2、执行 `make menuconfig` ，选中Utilities下的install-program
    ``` 
    Utilities  --->  
       <*> install-program
