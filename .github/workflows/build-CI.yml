@@ -57,6 +57,7 @@ jobs:
           CONFIG_TARGET_armvirt_64=y
           CONFIG_TARGET_armvirt_64_DEVICE_Phicomm-n1=y
           CONFIG_BRCMFMAC_SDIO=y
+          CONFIG_PACKAGE_luci-app-haproxy-tcp=y
           # CONFIG_UnblockNeteaseMusic_NodeJS is not set
           EOF
 
