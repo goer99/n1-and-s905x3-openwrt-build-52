@@ -34,19 +34,18 @@ jobs:
       - name: Install feeds
         run: |
           cd lede
-
-          # lede mod
+          
           git clone https://github.com/tuanqing/lede-mod
-          git apply lede-mod/patch/*.patch
-          # luci-theme-bootstrap-mod & css patche
-          svn co https://github.com/Lienol/openwrt-package/trunk/lienol/luci-theme-bootstrap-mod package/luci-theme-bootstrap-mod
-          git clone https://github.com/tuanqing/bootstrap-mod
-          git apply bootstrap-mod/patch/*.patch --directory=package/luci-theme-bootstrap-mod
-          # n1 install program
           git clone https://github.com/tuanqing/install-program package/install-program
+          svn co https://github.com/Lienol/openwrt-package/trunk/lienol/luci-theme-bootstrap-mod package/luci-theme-bootstrap-mod
 
+          git apply lede-mod/lede/*.patch
+          
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          
+          git apply lede-mod/luci/*.patch --directory=feeds/luci
+          git apply lede-mod/bootstrap/*.patch --directory=package/luci-theme-bootstrap-mod
 
       - name: Make config
         run: |
@@ -63,6 +62,7 @@ jobs:
 
           make defconfig
           ./scripts/feeds update -a
+          cat .config
 
       - name: Compile openwrt
         run: |
