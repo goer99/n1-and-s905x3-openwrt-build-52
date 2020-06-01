@@ -59,7 +59,7 @@
    │       ├── kernel                        内核文件夹，在它下面添加你的自定义内核
    │       │   ├── 4.18.7                    4.18.7-aml-s9xxx @XQ7
    │       │   ├── 4.19.106                  4.19.106-amlogic-flippy-27o @flippy
-   │       │   └── 5.4.20                    5.4.20-amlogic-flippy-25+ @flippy
+   │       │   └── 5.4.20                    5.4.43-amlogic-flippy-37+o @flippy
    │       └── root                          rootfs文件夹，在它下面添加你的自定义文件
    ├── LICENSE                               license
    ├── make                                  构建脚本
