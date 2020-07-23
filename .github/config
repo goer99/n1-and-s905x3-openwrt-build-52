@@ -11,7 +11,7 @@ svn co https://github.com/Lienol/openwrt-package/trunk/lienol/luci-theme-argon-d
 svn co https://github.com/Lienol/openwrt-package/trunk/lienol/luci-theme-argon-light-mod \
     package/luci-theme-argon-light-mod
 
-cat > feeds.conf.default<<EOF
+cat >feeds.conf.default <<EOF
 # src-git packages https://git.openwrt.org/feed/packages.git
 # src-git luci https://git.openwrt.org/project/luci.git;openwrt-19.07
 src-git packages https://github.com/Lienol/openwrt-packages.git;dev-master
@@ -30,11 +30,9 @@ git clone https://github.com/tuanqing/lede-mod
 
 echo "patching feeds luci"
 git apply lede-mod/luci/*.patch --directory=feeds/luci
-[ $? = 0 ] || echo "failed"
 
 echo "patching luci-theme-bootstrap-mod"
 git apply lede-mod/bootstrap/*.patch --directory=package/luci-theme-bootstrap-mod
-[ $? = 0 ] || echo "failed"
 
 zzz="package/lean/default-settings/files/zzz-default-settings"
 
@@ -55,8 +53,7 @@ lm-sensors install-program
 sed -i '/FEATURES+=/ { s/cpiogz //; s/ext4 //; s/ramdisk //; s/squashfs //; }' \
     target/linux/armvirt/Makefile
 for x in $packages; do
-    sed -i "/DEFAULT_PACKAGES/ s/$/ $x/" \
-        target/linux/armvirt/Makefile
+    sed -i "/DEFAULT_PACKAGES/ s/$/ $x/" target/linux/armvirt/Makefile
 done
 
 cat >.config <<EOF
@@ -65,6 +62,7 @@ CONFIG_TARGET_armvirt=y
 CONFIG_TARGET_armvirt_64=y
 CONFIG_TARGET_armvirt_64_Default=y
 ## luci app
+CONFIG_PACKAGE_luci-app-adbyby-plus=y
 CONFIG_PACKAGE_luci-app-aria2=y
 CONFIG_PACKAGE_luci-app-cifs-mount=y
 CONFIG_PACKAGE_luci-app-samba4=y

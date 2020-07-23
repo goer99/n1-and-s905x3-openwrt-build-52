@@ -49,7 +49,7 @@ extract_openwrt() {
             break
             ;;
         gz)
-            if (ls $firmware | grep -q ".tar.gz$"); then
+            if ls $firmware | grep -q ".tar.gz$"; then
                 tar -xzf $firmware -C $root_comm
                 break
             else
@@ -96,10 +96,10 @@ extract_armbian() {
 
     mkdir -p $root $boot
 
-    tar -xzf "./armbian/boot-common.tar.gz" -C $boot
-    tar -xzf "$kernel_dir/kernel.tar.gz" -C $boot
-    tar -xzf "./armbian/firmware.tar.gz" -C $root
-    tar -xzf "$kernel_dir/modules.tar.gz" -C $root
+    tar -xJf "./armbian/boot-common.tar.xz" -C $boot
+    tar -xJf "$kernel_dir/kernel.tar.xz" -C $boot
+    tar -xJf "./armbian/firmware.tar.xz" -C $root
+    tar -xJf "$kernel_dir/modules.tar.xz" -C $root
 
     cp -r $root_comm/* $root
     [ $(ls $root_dir | wc -w) != 0 ] && cp -r $root_dir/* $root
@@ -184,7 +184,7 @@ get_kernels() {
         work=$(pwd)
         cd $kernel_root
         for x in $(ls ./); do
-            [[ -f "$x/kernel.tar.gz" && -f "$x/modules.tar.gz" ]] && kernels[i++]=$x
+            [[ -f "$x/kernel.tar.xz" && -f "$x/modules.tar.xz" ]] && kernels[i++]=$x
         done
         cd $work
     }
@@ -274,7 +274,7 @@ the kernel version is "all", and the rootfs partition size is 512m
 
   -k=VERSION        set the kernel version, which must be in the "kernel" directory
      , -k all       build all the kernel version
-     , -k latest    build latest kernel version
+     , -k latest    build the latest kernel version
 
   --kernel          show all kernel version in "kernel" directory
 
@@ -311,7 +311,7 @@ while [ "$1" ]; do
     -k)
         kernel=$2
         kernel_dir="./armbian/$device/kernel/$kernel"
-        if [[ "$kernel" = "all" || -f "$kernel_dir/kernel.tar.gz" ]]; then
+        if [[ "$kernel" = "all" || -f "$kernel_dir/kernel.tar.xz" ]]; then
             shift
         elif [ "$kernel" = "latest" ]; then
             kernel="${kernels[-1]}"
