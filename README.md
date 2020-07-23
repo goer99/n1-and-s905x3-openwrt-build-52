@@ -57,8 +57,7 @@
    │       ├── boot-common.tar.gz            公有启动文件
    │       ├── firmware.tar.gz               armbian固件
    │       ├── kernel                        内核文件夹，在它下面添加你的自定义内核
-   │       │   ├── 4.18.7                    kernel 4.18.7-aml-s9xxx @XQ7
-   │       │   ├── 4.19.106                  kernel 4.19.106-amlogic-flippy-27o @flippy
+   │       │   ├── 4.19.134                  kernel 4.19.134-mainline
    │       │   └── 5.4.50                    kernel 5.4.50-flippy-38+o @flippy
    │       └── root                          rootfs文件夹，在它下面添加你的自定义文件
    ├── LICENSE                               license
@@ -79,11 +78,11 @@
    * examples：  
       `sudo ./make -c` ，清理文件  
       `sudo ./make -d` ，使用默认配置  
-      `sudo ./make -k 4.19.106` ，将内核版本设置为4.19.106  
+      `sudo ./make -k 4.19.134` ，将内核版本设置为4.19.134  
       `sudo ./make -k latest` ，使用最新内核  
       `sudo ./make -s 256` ，将ROOTFS分区大小设置为256m  
       `sudo ./make -d -s 256` ，使用默认，并将分区大小设置为256m  
-      `sudo ./make -d -s 256 -k 4.19.106` ，使用默认，并将分区大小设置为256m，内核版本设置为4.19.106
+      `sudo ./make -d -s 256 -k 4.19.134` ，使用默认，并将分区大小设置为256m，内核版本设置为4.19.134
 
 * 自定义
    * 使用自定义内核  
