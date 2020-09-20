@@ -24,7 +24,7 @@ git apply ../.github/patches/{0001*,0002*}.patch --directory=feeds/luci
 
 zzz="package/lean/default-settings/files/zzz-default-settings"
 sed -i 's/samba/samba4/' $zzz
-sed -i 's#openwrt.proxy.ustclug.org#mirrors.bfsu.edu.cn\\/openwrt#' $zzz
+# sed -i 's#openwrt.proxy.ustclug.org#mirrors.bfsu.edu.cn\\/openwrt#' $zzz
 sed -i "/openwrt_luci/i sed -i '/Lienol/d' /etc/opkg/distfeeds.conf" $zzz
 sed -i "/openwrt_luci/i sed -i '/helloworld/d' /etc/opkg/distfeeds.conf" $zzz
 
