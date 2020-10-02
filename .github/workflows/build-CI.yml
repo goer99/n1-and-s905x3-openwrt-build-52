@@ -1,4 +1,4 @@
-name: N1-OpenWrt-CI
+name: OpenWrt-CI
 
 on:
   schedule:
@@ -48,21 +48,28 @@ jobs:
       - name: Build firmware
         run: |
           cp lede/bin/targets/*/*/*.tar.gz ./openwrt
-          sudo ./make -d
+          sudo ./gen_openwrt -d -k latest
           
+          devices=("phicomm-n1" "vplus")
+
           i=0
           cd out
-          for x in $(ls .); do
+          for x in ${devices[*]}; do
             cd $x
-            filename=$(ls .)
-            filename=${filename%.*}
+            filename=$(ls | awk -F '.img' '{print $1}')
             gzip *.img
             cd ../
             echo "::set-env name=firmware_$((++i))::$filename"
           done
 
-      - name: Upload firmware @ kernel 5.4.66
+      - name: Upload firmware @ phicomm n1, kernel 5.4.68
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.firmware_1 }}
-          path: out/5.4.66
+          path: out/phicomm-n1
+      
+      - name: Upload firmware @ vplus, kernel 5.4.68
+        uses: actions/upload-artifact@main
+        with:
+          name: ${{ env.firmware_2 }}
+          path: out/vplus
