@@ -97,3 +97,7 @@
       向 device/${device}/root 目录添加你的文件
 
       **注意**：添加的文件应保持与 ROOTFS 分区目录结构一致
+
+## Thanks
+
+* flippy provides the kernel
