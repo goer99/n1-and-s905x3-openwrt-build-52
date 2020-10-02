@@ -71,8 +71,10 @@
 * 使用参数
    * `-c, --clean` ，清理临时文件和输出目录
    * `-d, --default` ，使用默认配置来构建固件( 构建所有设备、openwrt 下的第一个固件、构建所有内核、ROOTFS 分区大小为自定义最小 )
+   * `-e` ，从 openwrt 目录中提取内核，仅支持 img 格式和 xz 压缩的 img 格式
    * `-k=VERSION` ，设置内核版本，设置为 `all` 将会构架所有内核版本固件，设置为 `latest` 将构建最新内核版本固件
    * `-m=MACHINE` ，设置设备，设置为 `all` 将会构架所有设备的固件
+   * `--mount` ，挂载 openwrt 目录下的固件，仅支持 img 格式和 xz 压缩的 img 格式
    * `-s, --size=SIZE` ，设置 ROOTFS 分区大小，不要小于自定义最小
    * `-h, --help` ，显示帮助信息
    * examples：  
@@ -82,7 +84,8 @@
       `sudo ./gen_openwrt -m vplus`，构建 vplus 固件  
       `sudo ./gen_openwrt -s 512` ，将 ROOTFS 分区大小设置为 512M  
       `sudo ./gen_openwrt -d -k 5.4.68 -m vplus` ，使用默认，构建 vplus 固件，并将内核版本设置为 5.4.68  
-      `sudo ./gen_openwrt -e`，从 openwrt 目录中提取内核，仅支持 .img 格式和 xz 压缩的 .img 格式
+      `sudo ./gen_openwrt -e` ，从 openwrt 目录中提取内核  
+      `sudo ./gen_openwrt --mount` ，挂载 openwrt 目录中固件 
 
 * 自定义
    * 使用自定义内核  
