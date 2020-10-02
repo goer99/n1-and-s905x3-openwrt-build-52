@@ -31,7 +31,6 @@ cleanup() {
 
 get_devices() {
     local path=$device_path
-
     [ -d "$path" ] && {
         local len=0
         IFS=$'\n'
@@ -43,7 +42,6 @@ get_devices() {
 
 get_kernels() {
     local path=$kernel_path
-
     [ -d "$path" ] && {
         local len=0
         IFS=$'\n'
@@ -56,7 +54,6 @@ get_kernels() {
 
 get_firmwares() {
     local path=$firmware_path
-
     [ -d "$path" ] && {
         local len=0
         IFS=$'\n'
@@ -256,6 +253,7 @@ make_firmware() {
 
 do_others() {
     local path=$1
+    
     [ -d $path ] && {
         mkdir -p $path/{boot,opt,run}
 
