@@ -8,6 +8,7 @@ on:
     
 env:
   TZ: 'Asia/Shanghai'
+  TERM: xterm
 
 jobs:
   build:
@@ -23,10 +24,10 @@ jobs:
           docker rmi `docker images -q`
           sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /usr/lib/jvm /opt/ghc
           sudo -E apt-get -qq update
-          sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-1804)
+          sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-1804) libncurses5-dbg
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
-          sudo timedatectl set-timezone "$TZ"
+          sudo timedatectl set-timezone $TZ
 
       - name: Clone Lean's openwrt
         run: |
@@ -51,25 +52,23 @@ jobs:
           sudo ./gen_openwrt -d -k latest
           
           devices=("phicomm-n1" "vplus")
-
-          i=0
           cd out
           for x in ${devices[*]}; do
             cd $x
             filename=$(ls | awk -F '.img' '{print $1}')
             gzip *.img
             cd ../
-            echo "::set-env name=firmware_$((++i))::$filename"
+            echo "::set-env name=firmware_$x::$filename"
           done
 
       - name: Upload firmware @ phicomm n1, kernel 5.4.68
         uses: actions/upload-artifact@main
         with:
-          name: ${{ env.firmware_1 }}
+          name: ${{ env.firmware_phicomm-n1 }}
           path: out/phicomm-n1
       
       - name: Upload firmware @ vplus, kernel 5.4.68
         uses: actions/upload-artifact@main
         with:
-          name: ${{ env.firmware_2 }}
+          name: ${{ env.firmware_vplus }}
           path: out/vplus
