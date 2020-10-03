@@ -521,7 +521,7 @@ done
         echo -e "${kernels[@]}" | sed 's/ /, /g'
     else
         echo -e "$kernel"
-        devices=($kernel)
+        kernels=($kernel)
     fi
 }
 [ "$rootsize" ] && echo -e "rootsize\t=>  $rootsize"
