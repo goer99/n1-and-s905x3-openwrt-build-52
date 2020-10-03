@@ -6,11 +6,11 @@
 [![OpenWrt-CI](https://github.com/tuanqing/mknop/workflows/OpenWrt-CI/badge.svg?branch=master)](https://github.com/tuanqing/mknop/actions)  
  👆👆👆&nbsp; &nbsp; 戳上面查看构建状态
 
-## 使用方法
+## Usage
 
 1. Linux环境，推荐使用 Ubuntu 18.04 LTS
 2. 编译好待构建的 OpenWrt 固件，不会的自行科普 [Lean's OpenWrt source](https://github.com/coolsnowwolf/lede "Lean's OpenWrt source")  
-   编译N1固件的配置如下：
+   编译 OpenWrt 固件的配置如下：
    ``` 
    Target System (QEMU ARM Virtual Machine)  --->
    Subtarget (ARMv8 multiplatform)  --->
@@ -33,7 +33,7 @@
 3. 克隆仓库到本地  
    `git clone https://github.com/tuanqing/mknop` 
 4. 将你编译好的固件拷贝到 openwrt 目录( 可复制多个 )
-5. 使用 sudo 执行脚本  
+5. 使用 root 执行脚本  
    `sudo ./gen_openwrt` 
 6. 按照提示操作，如，选择设备、固件、内核版本、设置 ROOTFS 分区大小等  
    如果你不了解这些设置项，请按回车保持默认，或者直接执行  
@@ -44,33 +44,33 @@
 **注意**：  
 1、待构建的固件格式只支持 rootfs.tar[.gz]、 ext4-factory.img[.gz]、root.ext4[.gz] 6种，推荐使用 rootfs.tar.gz 格式 
 
-## 特别说明
+## Description
 
 * 目录说明
 ```
-   ├── common                                公共文件夹
-   │   ├── firmware-common.tar.gz            armbian 固件
-   │   └── kernel                            内核文件夹，在它下面添加你的自定义内核
+   ├── common                                公共目录
+   │   ├── firmware-common.tar.gz            armbian 固件
+   │   └── kernel                            内核目录
    │       └── 5.4.68                        kernel 5.4.68-flippy-45+o @flippy
    ├── device                                设备文件夹
-   │   ├── phicomm-n1                        phicomm n1 设备文件夹
+   │   ├── phicomm-n1                        phicomm n1 设备目录
    │   │   ├── boot-phicomm-n1.tar.gz        phicomm n1 启动文件
-   │   │   └── root                          phicomm n1 rootfs 文件夹
-   │   └── vplus                             vplus 设备文件夹
+   │   │   └── root                          phicomm n1 rootfs 目录
+   │   └── vplus                             vplus 设备目录
    │       ├── boot-vplus.tar.gz             vplus 启动文件
-   │       └── root                          vplus rootfs 文件夹
+   │       └── root                          vplus rootfs 目录
    ├── gen_openwrt                           构建脚本
    ├── LICENSE                               license
-   ├── openwrt                               固件文件夹(to build)
-   ├── out                                   固件文件夹(build ok)
-   ├── tmp                                   临时文件夹
+   ├── openwrt                               固件目录( 待构建 )
+   ├── out                                   固件目录( 构建完成的 )
+   ├── tmp                                   临时目录，脚本转储
    └── README.md                             readme
 
 ```
 
 * 使用参数
    * `-c, --clean` ，清理临时文件和输出目录
-   * `-d, --default` ，使用默认配置来构建固件( 构建所有设备、openwrt 下的第一个固件、构建所有内核、ROOTFS 分区大小为自定义最小 )
+   * `-d, --default` ，使用默认配置来构建固件( 构建所有设备、所有内核、openwrt 下的第一个固件、ROOTFS 分区大小为自定义最小 )
    * `-e` ，从 openwrt 目录中提取内核，仅支持 img 格式和 xz 压缩的 img 格式
    * `-k=VERSION` ，设置内核版本，设置为 `all` 将会构架所有内核版本固件，设置为 `latest` 将构建最新内核版本固件
    * `-m=MACHINE` ，设置设备，设置为 `all` 将会构架所有设备的固件
