@@ -11,8 +11,13 @@ out="./out"
 # min root partition size
 minsize=512
 
+red="\033[31m"
+green="\033[32m"
+yellow="\033[33m"
+normal="\033[0m"
+
 die() {
-    echo -e "$(tput setaf 1)e$(tput sgr0) => $1"
+    echo -e "${red}e${normal} => $1"
     exit 1
 }
 
@@ -69,7 +74,7 @@ choose_device() {
     choose_option "${devices[*]}" ${#devices[*]}
     local opt=$?
     device=${devices[opt]}
-    echo -e "$(tput setaf 2)$device$(tput sgr0)\n"
+    echo -e "${green}${device}${normal}\n"
 }
 
 choose_firmware() {
@@ -79,7 +84,7 @@ choose_firmware() {
     choose_option "${firmwares[*]}" ${#firmwares[*]}
     local opt=$?
     firmware=${firmwares[opt]}
-    echo -e "$(tput setaf 2)$firmware$(tput sgr0)\n"
+    echo -e "${green}${firmware}${normal}\n"
 }
 
 choose_kernel() {
@@ -89,7 +94,7 @@ choose_kernel() {
     choose_option "${kernels[*]}" ${#kernels[*]}
     local opt=$?
     kernel=${kernels[opt]}
-    echo -e "$(tput setaf 2)$kernel$(tput sgr0)\n"
+    echo -e "${green}${kernel}${normal}\n"
 }
 
 choose_option() {
@@ -113,7 +118,7 @@ choose_option() {
             break
         else
             ((cnt++))
-            echo "$(tput setaf 1)your choice is wrong, please try again$(tput sgr0)"
+            echo "${red}your choice is wrong, please try again${normal}"
             sleep 1s
         fi
     done
@@ -286,14 +291,14 @@ set_rootsize() {
             break
         else
             ((cnt++))
-            echo -e "$(tput setaf 1)your input is wrong, please try again$(tput sgr0)\n"
+            echo -e "${red}your input is wrong, please try again${normal}\n"
             sleep 1s
         fi
     done
 
     [ $cnt = 3 ] && die "you type the wrong 3 times, the program automatically quit"
 
-    echo -e "$(tput setaf 2)$rootsize$(tput sgr0)\n"
+    echo -e "${green}${rootsize}${normal}\n"
 }
 
 extract_kernel() {
@@ -306,7 +311,7 @@ extract_kernel() {
         case "$suffix" in
             xz)
                 [ -d $tmp ] || mkdir -p $tmp
-                echo -e "$(tput setaf 2)unpack$(tput sgr0)"
+                echo -e "${green}unpack${normal}"
                 xz -dc $path > $tmp/${firmware%.*}
                 path=$tmp/${firmware%.*}
                 suffix=${path##*.}
@@ -324,7 +329,7 @@ extract_kernel() {
     local kversion=$(ls $mount/${loop_seq}p2/lib/modules)
     local version=$(echo $kversion | grep -oE '^[4-5].[0-9]+.[0-9]+')
 
-    echo -e "$(tput setaf 2)kernel version$(tput sgr0)  =>  $kversion"
+    echo -e "${green}kernel version${normal}  =>  $kversion"
 
     mkdir -p $tmp/$version/{boot,root/lib}
     cp -r $mount/${loop_seq}p1/{config-*,initrd.img-*,System.map-*,uInitrd,zImage} $tmp/$version/boot
@@ -337,14 +342,14 @@ extract_kernel() {
     )
 
     (
-        echo -e "$(tput setaf 2)package$(tput sgr0)\t\t=>  kernel-$version.tar.gz"
+        echo -e "${green}package${normal}\t\t=>  kernel-$version.tar.gz"
         cd $tmp/$version/boot
         tar czf kernel-$version.tar.gz *
         mv kernel-$version.tar.gz ../
     )
 
     (
-        echo -e "$(tput setaf 2)package$(tput sgr0)\t\t=>  modules-$version.tar.gz"
+        echo -e "${green}package${normal}\t\t=>  modules-$version.tar.gz"
         cd $tmp/$version/root
         tar czf modules-$version.tar.gz lib/
         mv modules-$version.tar.gz ../
@@ -354,7 +359,7 @@ extract_kernel() {
 
     [ -f $tmp/$version/kernel-$version.tar.gz ] && [ -f $tmp/$version/modules-$version.tar.gz ] && {
         [ -d $kernel_path/$version ] && {
-            echo && read -p "this version $(tput setaf 3)$version$(tput sgr0) already exists, do you want to replace it? [Y/n] " yn && echo 
+            echo && read -p "this version ${yellow}${version}${normal} already exists, do you want to replace it? [Y/n] " yn && echo 
             case "$yn" in
                 n|N) yn=n ;;
                 *) yn=y ;;
@@ -363,7 +368,7 @@ extract_kernel() {
         [[ ! "$yn" || "$yn" = "y" ]] && {
             cp -r $tmp/$version $kernel_path
             chown -R 1000:1000 $kernel_path/$version
-            echo -e "$(tput setaf 2)done$(tput sgr0)"
+            echo -e "${green}done${normal}"
         }
     }
 
@@ -383,7 +388,7 @@ mount_image() {
         case "$suffix" in
             xz)
                 [ -d $tmp ] || mkdir -p $tmp
-                echo -e "$(tput setaf 2)unpack$(tput sgr0)"
+                echo -e "${green}unpack${normal}"
                 xz -dc $path > $tmp/${firmware%.*}
                 path=$tmp/${firmware%.*}
                 suffix=${path##*.}
@@ -398,7 +403,7 @@ mount_image() {
         esac
     done
 
-    echo -e "$(tput setaf 2)success mounted to $(tput setaf 3)${mount:2}/$loop_seq$(tput sgr0)"
+    echo -e "${green}success mounted to ${yellow}${mount:2}/${loop_seq}${normal}"
 }
 
 usage() {
@@ -423,11 +428,11 @@ device_path="./device"
 kernel_path="./common/kernel"
 firmware_path="./openwrt"
 
-nodevice="there is no device in $(tput setaf 3)${device_path:2}$(tput sgr0) directory!"
-nokernel="there is no kernel in $(tput setaf 3)${kernel_path:2}$(tput sgr0) directory!"
-nofirmware="there is no firmware in $(tput setaf 3)${firmware_path:2}$(tput sgr0) directory!"
+nodevice="there is no device in ${yellow}${device_path:2}${normal} directory!"
+nokernel="there is no kernel in ${yellow}${kernel_path:2}${normal} directory!"
+nofirmware="there is no firmware in ${yellow}${firmware_path:2}${normal} directory!"
 
-echo -e "Welcome to arm-box openwrt firmware generator!\n"
+echo -e "Welcome to aarch64 openwrt firmware generator!\n"
 [ $(id -u) = 0 ] || die "please run this script as root"
 
 cleanup
@@ -447,7 +452,7 @@ while [ "$1" ]; do
         ;;
         -c|--clean)
             cleanup
-            echo -e "$(tput setaf 2)done$(tput sgr0)"
+            echo -e "${green}done${normal}"
             exit
         ;;
         -d|--default)
@@ -470,7 +475,7 @@ while [ "$1" ]; do
                 kernel=${kernels[-1]}
                 shift
             else
-                die "invalid kernel $(tput setaf 1)$kernel$(tput sgr0)"
+                die "invalid kernel ${red}$kernel${normal}"
             fi
         ;;
         -m)
@@ -478,7 +483,7 @@ while [ "$1" ]; do
             if [ -f $device_path/$device/boot-*.tar.gz ] || [ "$device" = "all" ]; then
                 shift
             else
-                die "invalid device $(tput setaf 1)$device$(tput sgr0)"
+                die "invalid device ${red}$device${normal}"
             fi
         ;;
         --mount)
@@ -490,19 +495,35 @@ while [ "$1" ]; do
             if [[ "$rootsize" -ge "$minsize" ]] 2>/dev/null; then
                 shift
             else
-                die "invalid rootsize $(tput setaf 1)$rootsize$(tput sgr0)"
+                die "invalid rootsize ${red}$rootsize${normal}"
             fi
         ;;
         *)
-            die "invalid option $(tput setaf 1)$1$(tput sgr0)"
+            die "invalid option ${red}$1${normal}"
         ;;
     esac
     shift
 done
 
-[ "$device" ] && echo -e "device\t\t=>  $device"
+[ "$device" ] && {
+    echo -en "device\t\t=>  "
+    if [ "$device" = "all" ]; then
+        echo -e "${devices[@]}" | sed 's/ /, /g'
+    else
+        echo -e "$device"
+        devices=($device)
+    fi
+}
 [ "$firmware" ] && echo -e "firmware\t=>  $firmware"
-[ "$kernel" ] && echo -e "kernel\t\t=>  $kernel"
+[ "$kernel" ] && {
+    echo -en "kernel\t\t=>  "
+    if [ "$kernel" = "all" ]; then
+        echo -e "${kernels[@]}" | sed 's/ /, /g'
+    else
+        echo -e "$kernel"
+        devices=($kernel)
+    fi
+}
 [ "$rootsize" ] && echo -e "rootsize\t=>  $rootsize"
 [ "$device" ] || [ "$firmware" ] || [ "$kernel" ] || [ "$rootsize" ] && echo 
 
@@ -511,20 +532,20 @@ done
 [ "$kernel" ] || choose_kernel
 [ "$rootsize" ] || set_rootsize
 
-[[ "$device" && "$device" != "all" ]] && devices=($device)
-[[ "$kernel" && "$kernel" != "all" ]] && kernels=($kernel)
+# [[ "$device" && "$device" != "all" ]] && devices=($device)
+# [[ "$kernel" && "$kernel" != "all" ]] && kernels=($kernel)
 
-echo -e "$(tput setaf 2)unpack openwrt$(tput sgr0)"
+echo -e "${green}unpack openwrt${normal}"
 unpack_openwrt
 
 for kernel in ${kernels[*]}; do
     for device in ${devices[*]}; do
     {
-        echo -e "$(tput setaf 2)unpack armbian$(tput sgr0)  =>  $device @ $kernel"
+        echo -e "${green}unpack armbian${normal}  =>  $device @ $kernel"
         unpack_armbian
-        echo -e "$(tput setaf 2)make firmware$(tput sgr0)\t=>  $device @ $kernel"
+        echo -e "${green}make firmware${normal}\t=>  $device @ $kernel"
         make_firmware
-        echo -e "$(tput setaf 2)done$(tput sgr0)\t\t=>  $device @ $kernel"
+        echo -e "${green}done${normal}\t\t=>  $device @ $kernel"
     } &
     done
 done
