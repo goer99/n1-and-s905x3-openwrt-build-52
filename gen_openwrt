@@ -145,8 +145,6 @@ do_losetup() {
     mount="$tmp/mount"
     mkdir -p $mount
 
-    sync
-
     [ -e ${loop}p1 ] && {
         mkdir -p $mount/${loop_seq}p1
         mount ${loop}p1 $mount/${loop_seq}p1
@@ -217,11 +215,9 @@ unpack_armbian() {
     common_boot="$tmp/common/kernel/$kernel/boot"
 
     mkdir -p $common_boot
-
-    sleep 0.1 &
-
-    [ -f $common_boot/config-* ] || tar xzf $path/kernel-*.tar.gz -C $common_boot
-    [ -f $common_root/lib/firmware/README.md ] || tar xzf ./common/firmware-common.tar.gz -C $common_root
+    
+    tar xzf $path/kernel-*.tar.gz -C $common_boot 2>/dev/null
+    tar xzf ./common/firmware-common.tar.gz -C $common_root 2>/dev/null
 
     device_final="$tmp/device/$device"
     mkdir -p ${device_final}/$kernel/{boot,root}
