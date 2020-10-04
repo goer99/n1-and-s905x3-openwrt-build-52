@@ -192,7 +192,7 @@ unpack_openwrt() {
                     cp -r $mount/${loop_seq}p2/* $common_root
                     # umount -f ${loop}p[1-2]
                 # special for single partition image
-                elif [ -d $mount/${loop_seq}p2 ]; then
+                elif [ -d $mount/${loop_seq}p1 ]; then
                     cp -r $mount/${loop_seq}p1/* $common_root
                 elif [ -d $mount/${loop_seq} ]; then
                     cp -r $mount/${loop_seq}/* $common_root
