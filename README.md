@@ -1,5 +1,5 @@
-# 自动构建斐讯 N1、微加云( Vplus ) OpenWrt 固件脚本
-# Automatically Build OpenWrt Firmware for PHICOMM N1, VPLUS and so on
+# 自动构建斐讯 N1、微加云、贝壳云、我家云、S905x3( X96 Max Plus, HK1 Box ) OpenWrt 固件脚本
+# Automatically Build OpenWrt Firmware for Phicomm n1, Vplus, Beikeyun, L1-pro, S905x3( X96 Max Plus, HK1 Box ) etc
 
 **制作脚本已部署到 Github Action，真正实现一栈式全自动构建，每周六早上六点准时为你构建，无须自行制作，下载即可用**
 
@@ -100,4 +100,4 @@
 
 ## Thanks
 
-* flippy provides the kernel
+* flippy provides the kernel, armbian image
