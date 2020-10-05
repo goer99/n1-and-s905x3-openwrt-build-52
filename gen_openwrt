@@ -73,7 +73,6 @@ get_firmwares() {
 
 choose_device() {
     local i=0
-    [ ${#devices[*]} = 0 ] && die "$nodevice"
     echo "device: "
     choose_option "${devices[*]}" ${#devices[*]}
     local opt=$?
@@ -83,7 +82,6 @@ choose_device() {
 
 choose_firmware() {
     local i=0
-    [ ${#firmwares[*]} = 0 ] && die "$nofirmware"
     echo "firmware: "
     choose_option "${firmwares[*]}" ${#firmwares[*]}
     local opt=$?
@@ -93,7 +91,6 @@ choose_firmware() {
 
 choose_kernel() {
     local i=0
-    [ ${#kernels[*]} = 0 ] && die "$nokernel"
     echo "kernel: "
     choose_option "${kernels[*]}" ${#kernels[*]}
     local opt=$?
@@ -188,17 +185,14 @@ unpack_openwrt() {
                 do_losetup $path
                 if [ -d $mount/${loop_seq}p2 ]; then
                     cp -r $mount/${loop_seq}p2/* $common_root
-                    # umount -f ${loop}p[1-2]
                 # special for single partition image
                 elif [ -d $mount/${loop_seq}p1 ]; then
                     cp -r $mount/${loop_seq}p1/* $common_root
                 elif [ -d $mount/${loop_seq} ]; then
                     cp -r $mount/${loop_seq}/* $common_root
-                    # umount -f ${loop}
                 else
                     die "error unpack $path"
                 fi
-                # losetup -d ${loop}
                 break
             ;;
             *)
@@ -213,13 +207,12 @@ unpack_openwrt() {
 unpack_armbian() {
     local path="$kernel_path/$kernel"
     common_boot="$tmp/common/kernel/$kernel/boot"
+    device_final="$tmp/device/$device"
 
     mkdir -p $common_boot
-    
     tar xzf $path/kernel-*.tar.gz -C $common_boot 2>/dev/null
     tar xzf ./common/firmware-common.tar.gz -C $common_root 2>/dev/null
 
-    device_final="$tmp/device/$device"
     mkdir -p ${device_final}/$kernel/{boot,root}
     cp -r $common_boot/* ${device_final}/$kernel/boot
     cp -r $common_root/* ${device_final}/$kernel/root
@@ -283,9 +276,6 @@ make_firmware() {
         # do something else
         do_others "$mount/${loop_seq}p2"
     }
-
-    # umount -f ${loop}p[1-2]
-    # losetup -d ${loop}
 }
 
 do_others() {
@@ -414,9 +404,6 @@ extract_kernel() {
         }
     }
 
-    # umount -f ${loop}p[1-2]
-    # losetup -d ${loop}
-
     cleanup
 }
 
@@ -480,11 +467,8 @@ echo -e "Welcome to aarch64 openwrt firmware generator!\n"
 cleanup
 
 get_devices
-# [ ${#devices[*]} = 0 ] && die "$nodevice"
 get_firmwares
-# [ ${#firmwares[*]} = 0 ] && die "$nofirmware"
 get_kernels
-# [ ${#kernels[*]} = 0 ] && die "$nokernel"
 
 while [ "$1" ]; do
     case "$1" in
@@ -510,11 +494,14 @@ while [ "$1" ]; do
         -k)
             kernel=$2
             if [ -f $kernel_path/$kernel/kernel-*.tar.gz ] && \
-               [ -f $kernel_path/$kernel/modules-*.tar.gz ] || \
-               [ "$kernel" = "all" ]; then
+               [ -f $kernel_path/$kernel/modules-*.tar.gz ]; then
+                kernels=($kernel)
+                shift
+            elif [ "$kernel" = "all" ]; then
+                [ ${#kernels[*]} = 0 ] && unset kernel
                 shift
             elif [ "$kernel" = "latest" ]; then
-                kernel=${kernels[-1]}
+                [ ${#kernels[*]} = 0 ] && unset kernel || kernel=${kernels[-1]}
                 shift
             else
                 die "invalid kernel ${red}$kernel${normal}"
@@ -522,7 +509,11 @@ while [ "$1" ]; do
         ;;
         -m)
             device=$2
-            if [ -f $device_path/$device/boot-*.tar.gz ] || [ "$device" = "all" ]; then
+            if [ -f $device_path/$device/boot-*.tar.gz ]; then
+                devices=($device)
+                shift
+            elif [ "$device" = "all" ]; then
+                [ ${#devices[*]} = 0 ] && unset device
                 shift
             else
                 die "invalid device ${red}$device${normal}"
@@ -550,23 +541,24 @@ done
 
 [ "$device" ] && {
     echo -en "device\t\t=>  "
-    [ "$device" = "all" ] && echo -e "${devices[@]}" | sed 's/ /, /g' || echo -e "$device"
+    echo -e "${devices[@]}" | sed 's/ /, /g'
 }
 [ "$firmware" ] && echo -e "firmware\t=>  $firmware"
 [ "$kernel" ] && {
     echo -en "kernel\t\t=>  "
-    [ "$kernel" = "all" ] && echo -e "${kernels[@]}" | sed 's/ /, /g' || echo -e "$kernel"
+    echo -e "${kernels[@]}" | sed 's/ /, /g'
 }
 [ "$rootsize" ] && echo -e "rootsize\t=>  $rootsize"
 [ "$device" ] || [ "$firmware" ] || [ "$kernel" ] || [ "$rootsize" ] && echo 
+
+[ ${#devices[*]} = 0 ] && die "$nodevice"
+[ ${#firmwares[*]} = 0 ] && die "$nofirmware"
+[ ${#kernels[*]} = 0 ] && die "$nokernel"
 
 [ "$device" ] || choose_device
 [ "$firmware" ] || choose_firmware
 [ "$kernel" ] || choose_kernel
 [ "$rootsize" ] || set_rootsize
-
-[[ "$device" && "$device" != "all" ]] && devices=($device)
-[[ "$kernel" && "$kernel" != "all" ]] && kernels=($kernel)
 
 echo -e "${green}unpack openwrt${normal}"
 unpack_openwrt
