@@ -16,6 +16,7 @@ src-git helloworld https://github.com/fw876/helloworld.git
 EOF
 
 rm -rf package/lean/{samba4,luci-app-samba4,luci-app-ttyd,luci-theme-argon}
+svn co https://github.com/Lienol/openwrt/branches/dev-master/package/libs/{libaudit,musl-fts,libsemanage} package/libs
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
