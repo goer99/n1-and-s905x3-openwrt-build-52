@@ -60,31 +60,31 @@ jobs:
             echo "::set-env name=firmware_$x::$filename"
           done
 
-      - name: Upload firmware @ phicomm n1, kernel 5.4.68
+      - name: Upload firmware @ phicomm n1, kernel 5.4.69
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.firmware_phicomm-n1 }}
           path: out/phicomm-n1
 
-      - name: Upload firmware @ vplus, kernel 5.4.68
+      - name: Upload firmware @ vplus, kernel 5.4.69
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.firmware_vplus }}
           path: out/vplus
 
-      - name: Upload firmware @ beikeyun, kernel 5.4.68
+      - name: Upload firmware @ beikeyun, kernel 5.4.69
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.firmware_beikeyun }}
           path: out/beikeyun
 
-      - name: Upload firmware @ l1pro, kernel 5.4.68
+      - name: Upload firmware @ l1pro, kernel 5.4.69
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.firmware_l1pro }}
           path: out/l1pro
 
-      - name: Upload firmware @ s905x3, kernel 5.4.68
+      - name: Upload firmware @ s905x3, kernel 5.4.69
         uses: actions/upload-artifact@main
         with:
           name: ${{ env.firmware_s905x3 }}
