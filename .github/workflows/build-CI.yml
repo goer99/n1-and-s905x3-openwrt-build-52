@@ -57,7 +57,7 @@ jobs:
             filename=$(ls | awk -F '.img' '{print $1}')
             gzip *.img
             cd ../
-            echo "::set-env name=firmware_$x::$filename"
+            echo "firmware_$x=$filename" >> $GITHUB_ENV
           done
 
       - name: Upload firmware @ phicomm n1
