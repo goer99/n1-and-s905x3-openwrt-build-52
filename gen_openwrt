@@ -8,17 +8,7 @@
 
 tmp="./tmp"
 out="./out"
-# min root partition size
-minsize=512
-
-red="\033[31m"
-green="\033[32m"
-yellow="\033[33m"
-normal="\033[0m"
-
-allwinner="vplus"
-amlogic="phicomm-n1 s905x3"
-rockchip="beikeyun l1pro"
+minsize=512 # min root partition size
 
 die() {
     echo -e "${red}e${normal} => $1"
@@ -170,8 +160,7 @@ unpack_openwrt() {
                 path=$tmp/${firmware%.*}
                 suffix=${path##*.}
             ;;
-            gz) 
-                # special for .tar.gz
+            gz) # special for .tar.gz
                 if ls $path | grep -q '.tar.gz$'; then
                     tar xzf $path -C $common_root
                     break
@@ -190,6 +179,7 @@ unpack_openwrt() {
                     cp -r $mount/${loop_seq}p1/* $common_root
                 elif [ -d $mount/${loop_seq} ]; then
                     cp -r $mount/${loop_seq}/* $common_root
+                #
                 else
                     die "error unpack $path"
                 fi
@@ -453,13 +443,18 @@ Options:
 EOF
 }
 
+red="\033[31m"
+green="\033[32m"
+yellow="\033[33m"
+normal="\033[0m"
+
+allwinner="vplus"
+amlogic="phicomm-n1 s905x3"
+rockchip="beikeyun l1pro"
+
 device_path="./device"
 kernel_path="./common/kernel"
 firmware_path="./openwrt"
-
-nodevice="there is no device in ${yellow}${device_path:2}${normal} directory!"
-nokernel="there is no kernel in ${yellow}${kernel_path:2}${normal} directory!"
-nofirmware="there is no firmware in ${yellow}${firmware_path:2}${normal} directory!"
 
 echo -e "Welcome to aarch64 openwrt firmware generator!\n"
 [ $(id -u) = 0 ] || die "please run this script as root"
@@ -551,9 +546,9 @@ done
 [ "$rootsize" ] && echo -e "rootsize\t=>  $rootsize"
 [ "$device" ] || [ "$firmware" ] || [ "$kernel" ] || [ "$rootsize" ] && echo 
 
-[ ${#devices[*]} = 0 ] && die "$nodevice"
-[ ${#firmwares[*]} = 0 ] && die "$nofirmware"
-[ ${#kernels[*]} = 0 ] && die "$nokernel"
+[ ${#devices[*]} = 0 ] && die "there is no device in ${yellow}${device_path:2}${normal} directory!"
+[ ${#firmwares[*]} = 0 ] && die "there is no firmware in ${yellow}${firmware_path:2}${normal} directory!"
+[ ${#kernels[*]} = 0 ] && die "there is no kernel in ${yellow}${kernel_path:2}${normal} directory!"
 
 [ "$device" ] || choose_device
 [ "$firmware" ] || choose_firmware
