@@ -232,11 +232,16 @@ make_firmware() {
     mke2fs -F -q -t ext4 -L "ROOTFS" -m 0 ${loop}p2 >/dev/null 2>&1
 
     if [ $is_rockchip = true ]; then
-        # write bootloader
-        dd if=./common/rk3328.bin of=${loop} bs=1 count=446 2>/dev/null
-        dd if=./common/rk3328.bin of=${loop} bs=512 skip=1 seek=1 2>/dev/null
-        sync
+        loader="./common/loader/rk3328.bin"
+    elif [ $device = "s905x3" ]; then
+        loader="./common/loader/hk1box.bin"
     fi
+
+    [ "$loader" ] && {
+        # write bootloader
+        dd if=$loader of=$loop bs=1 count=442 conv=fsync 2>/dev/null
+        dd if=$loader of=$loop bs=512 skip=1 seek=1 conv=fsync 2>/dev/null
+    }
 
     losetup -d ${loop}
 
@@ -267,34 +272,32 @@ make_firmware() {
 
 do_others() {
     local path=$1
-    
-    [ -d $path ] && {
-        mkdir -p $path/{boot,opt,run}
 
-        local is_amlogic=false
-        local is_rockchip=false
+    mkdir -p $path/{boot,opt,run}
 
-        echo $amlogic | grep -iq $device && is_amlogic=true
-        echo $rockchip | grep -iq $device && is_rockchip=true
+    local is_amlogic=false
+    local is_rockchip=false
 
-        if [ $is_amlogic = true ]; then
-            printf 'pwm_meson' > $path/etc/modules.d/pwm-meson
-            sed -i 's/ttyAMA0/ttyAML0/' $path/etc/inittab
-            sed -i 's/ttyS0/tty0/' $path/etc/inittab
-        elif [ $is_rockchip = true ]; then
-            sed -i 's/ttyAMA0/tty1/' $path/etc/inittab
-            sed -i 's/ttyS0/ttyS2/' $path/etc/inittab
-        fi
+    echo $amlogic | grep -iq $device && is_amlogic=true
+    echo $rockchip | grep -iq $device && is_rockchip=true
 
-        if ! grep -q '/tmp/upgrade' $path/etc/init.d/boot; then
-                sed -i '/kmodloader/i\\tmkdir -p \/tmp\/upgrade' $path/etc/init.d/boot
-        fi
-        if ! grep -q 'ulimit -n' $path/etc/init.d/boot; then
-            sed -i '/kmodloader/i\\tulimit -n 131072\n' $path/etc/init.d/boot
-        fi
+    if [ $is_amlogic = true ]; then
+        printf 'pwm_meson' > $path/etc/modules.d/pwm-meson
+        sed -i 's/ttyAMA0/ttyAML0/' $path/etc/inittab
+        sed -i 's/ttyS0/tty0/' $path/etc/inittab
+    elif [ $is_rockchip = true ]; then
+        sed -i 's/ttyAMA0/tty1/' $path/etc/inittab
+        sed -i 's/ttyS0/ttyS2/' $path/etc/inittab
+    fi
 
-        chown -R 0:0 $path
-    }
+    if ! grep -q '/tmp/upgrade' $path/etc/init.d/boot; then
+            sed -i '/kmodloader/i\\tmkdir -p \/tmp\/upgrade' $path/etc/init.d/boot
+    fi
+    if ! grep -q 'ulimit -n' $path/etc/init.d/boot; then
+        sed -i '/kmodloader/i\\tulimit -n 131072\n' $path/etc/init.d/boot
+    fi
+
+    chown -R 0:0 $path
 }
 
 set_rootsize() {
