@@ -29,36 +29,30 @@ cleanup() {
 
 get_devices() {
     local path=$device_path
-    [ -d "$path" ] && {
-        local len=0
-        IFS=$'\n'
-        for x in $(ls $path); do
-            [ -f $path/$x/boot-*.tar.gz ] && devices[len++]=$x
-        done
-    }
+    local len=0
+    IFS=$'\n'
+    for x in $(ls $path); do
+        [ -f $path/$x/boot-*.tar.gz ] && devices[len++]=$x
+    done
 }
 
 get_kernels() {
     local path=$kernel_path
-    [ -d "$path" ] && {
-        local len=0
-        IFS=$'\n'
-        for x in $(ls $path); do
-            [ -f $path/$x/kernel-*.tar.gz ] && [ -f $path/$x/modules-*.tar.gz ] \
-                && kernels[len++]=$x
-        done
-    }
+    local len=0
+    IFS=$'\n'
+    for x in $(ls $path); do
+        [ -f $path/$x/kernel-*.tar.gz ] && [ -f $path/$x/modules-*.tar.gz ] \
+            && kernels[len++]=$x
+    done
 }
 
 get_firmwares() {
     local path=$firmware_path
-    [ -d "$path" ] && {
-        local len=0
-        IFS=$'\n'
-        for x in $(ls $path); do
-            firmwares[len++]=$x
-        done
-    }
+    local len=0
+    IFS=$'\n'
+    for x in $(ls $path); do
+        firmwares[len++]=$x
+    done
 }
 
 choose_device() {
@@ -67,6 +61,7 @@ choose_device() {
     choose_option "${devices[*]}" ${#devices[*]}
     local opt=$?
     device=${devices[opt]}
+    devices=($device)
     echo -e "${green}${device}${normal}\n"
 }
 
@@ -85,6 +80,7 @@ choose_kernel() {
     choose_option "${kernels[*]}" ${#kernels[*]}
     local opt=$?
     kernel=${kernels[opt]}
+    kernels=($kernel)
     echo -e "${green}${kernel}${normal}\n"
 }
 
@@ -210,6 +206,7 @@ unpack_armbian() {
     tar xzf $device_path/$device/boot-$device.tar.gz -C ${device_final}/$kernel/boot
     tar xzf $path/modules-*.tar.gz -C ${device_final}/$kernel/root
     [ $(ls $device_path/$device/root | wc -l) = 0 ] || cp -r $device_path/$device/root/* ${device_final}/$kernel/root
+    [ $(ls ./common/root | wc -l) = 0 ] || cp -r ./common/root/* ${device_final}/$kernel/root
 }
 
 make_firmware() {
@@ -284,15 +281,14 @@ do_others() {
             printf 'pwm_meson' > $path/etc/modules.d/pwm-meson
             sed -i 's/ttyAMA0/ttyAML0/' $path/etc/inittab
             sed -i 's/ttyS0/tty0/' $path/etc/inittab
-
-            if ! grep -q '/tmp/upgrade' $path/etc/init.d/boot; then
-                sed -i '/kmodloader/i\\tmkdir -p \/tmp\/upgrade' $path/etc/init.d/boot
-            fi
         elif [ $is_rockchip = true ]; then
             sed -i 's/ttyAMA0/tty1/' $path/etc/inittab
             sed -i 's/ttyS0/ttyS2/' $path/etc/inittab
         fi
 
+        if ! grep -q '/tmp/upgrade' $path/etc/init.d/boot; then
+                sed -i '/kmodloader/i\\tmkdir -p \/tmp\/upgrade' $path/etc/init.d/boot
+        fi
         if ! grep -q 'ulimit -n' $path/etc/init.d/boot; then
             sed -i '/kmodloader/i\\tulimit -n 131072\n' $path/etc/init.d/boot
         fi
