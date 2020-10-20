@@ -29,6 +29,7 @@ cleanup() {
 
 get_devices() {
     local path=$device_path
+    [ -d $path ] || return
     local len=0
     IFS=$'\n'
     for x in $(ls $path); do
@@ -38,6 +39,7 @@ get_devices() {
 
 get_kernels() {
     local path=$kernel_path
+    [ -d $path ] || return
     local len=0
     IFS=$'\n'
     for x in $(ls $path); do
@@ -48,6 +50,7 @@ get_kernels() {
 
 get_firmwares() {
     local path=$firmware_path
+    [ -d $path ] || return
     local len=0
     IFS=$'\n'
     for x in $(ls $path); do
