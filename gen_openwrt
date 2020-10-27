@@ -236,8 +236,12 @@ make_firmware() {
 
     if [ $is_rockchip = true ]; then
         loader="./common/loader/rk3328.bin"
-    elif [ $device = "s905x3" ]; then
-        loader="./common/loader/hk1box.bin"
+    elif [ "$device" = "s905x3" ]; then
+        loader="./common/loader/s905x3.bin"
+    elif [ "$device" = "vplus" ]; then
+        loader="./common/loader/sunxi.bin"
+        dd if=$loader of=$loop bs=1024 seek=8 conv=fsync 2>/dev/null
+        unset loader
     fi
 
     [ "$loader" ] && {
