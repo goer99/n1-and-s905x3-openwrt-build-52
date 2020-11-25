@@ -397,6 +397,7 @@ extract_kernel() {
             esac
         }
         [[ ! "$yn" || "$yn" = "y" ]] && {
+            [ -d $kernel_path ] || mkdir -p $kernel_path
             cp -r $tmp/$version $kernel_path
             chown -R 1000:1000 $kernel_path/$version
             echo -e "${green}done${normal}"
