@@ -13,6 +13,7 @@ minsize=512
 
 die() {
     echo -e "${red}e${normal} => $1"
+    cleanup
     exit 1
 }
 
@@ -333,29 +334,7 @@ set_rootsize() {
 }
 
 extract_kernel() {
-    choose_firmware
-
-    local path="$firmware_path/$firmware"
-    local suffix="${firmware##*.}"
-
-    while true; do
-        case "$suffix" in
-            xz)
-                [ -d $tmp ] || mkdir -p $tmp
-                echo -e "${green}unpack${normal}"
-                xz -dc $path > $tmp/${firmware%.*}
-                path=$tmp/${firmware%.*}
-                suffix=${path##*.}
-            ;;
-            img)
-                do_losetup $path
-                break
-            ;;
-            *)
-                die "unsupported firmware format!"
-            ;;
-        esac
-    done
+    mount_image
 
     local kversion=$(ls $mount/${loop_seq}p2/lib/modules)
     local version=$(echo $kversion | grep -oE '^[4-5].[0-9]+.[0-9]+')
@@ -363,7 +342,25 @@ extract_kernel() {
     echo -e "${green}kernel version${normal}  =>  $kversion"
 
     mkdir -p $tmp/$version/{boot,root/lib}
-    cp -r $mount/${loop_seq}p1/{config-*,initrd.img-*,System.map-*,uInitrd-*,vmlinuz-*} $tmp/$version/boot
+
+    cp -r $mount/${loop_seq}p1/{config-*,initrd.img-*,System.map-*} $tmp/$version/boot
+    if [ -f $mount/${loop_seq}p1/uInitrd-* ]; then
+        cp $mount/${loop_seq}p1/uInitrd-* $tmp/$version/boot
+    else
+        [ -f $mount/${loop_seq}p1/uInitrd ] && \
+            cp $mount/${loop_seq}p1/uInitrd $tmp/$version/boot || \
+            die "no uInitrd found in $firmware!"
+        mv $tmp/$version/boot/uInitrd $tmp/$version/boot/uInitrd-$kversion
+    fi
+    if [ -f $mount/${loop_seq}p1/vmlinuz-* ]; then
+        cp $mount/${loop_seq}p1/vmlinuz-* $tmp/$version/boot
+    else
+        [ -f $mount/${loop_seq}p1/zImage ] && \
+            cp $mount/${loop_seq}p1/zImage $tmp/$version/boot || \
+            die "no vmlinuz found in $firmware!"
+        mv $tmp/$version/boot/zImage $tmp/$version/boot/vmlinuz-$kversion
+    fi
+
     cp -r $mount/${loop_seq}p2/lib/modules $tmp/$version/root/lib
 
     (
@@ -413,12 +410,19 @@ mount_image() {
     local path="$firmware_path/$firmware"
     local suffix="${firmware##*.}"
 
+    [ -d $tmp ] || mkdir -p $tmp
+
     while true; do
         case "$suffix" in
             xz)
-                [ -d $tmp ] || mkdir -p $tmp
                 echo -e "${green}unpack${normal}"
                 xz -dc $path > $tmp/${firmware%.*}
+                path=$tmp/${firmware%.*}
+                suffix=${path##*.}
+            ;;
+            gz)
+                echo -e "${green}unpack${normal}"
+                gzip -dc $path > $tmp/${firmware%.*}
                 path=$tmp/${firmware%.*}
                 suffix=${path##*.}
             ;;
