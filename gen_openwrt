@@ -110,7 +110,7 @@ choose_option() {
             break
         else
             ((cnt++))
-            echo "${red}your choice is wrong, please try again${normal}"
+            echo -e "${red}your choice is wrong, please try again${normal}"
             sleep 1s
         fi
     done
@@ -548,6 +548,10 @@ while [ "$1" ]; do
     shift
 done
 
+[ ${#devices[*]} = 0 ] && die "there is no device in ${yellow}${device_path:2}${normal} directory!"
+[ ${#firmwares[*]} = 0 ] && die "there is no firmware in ${yellow}${firmware_path:2}${normal} directory!"
+[ ${#kernels[*]} = 0 ] && die "there is no kernel in ${yellow}${kernel_path:2}${normal} directory!"
+
 [ "$device" ] && {
     echo -en "device\t\t=>  "
     echo -e "${devices[@]}" | sed 's/ /, /g'
@@ -559,10 +563,6 @@ done
 }
 [ "$rootsize" ] && echo -e "rootsize\t=>  $rootsize"
 [ "$device" ] || [ "$firmware" ] || [ "$kernel" ] || [ "$rootsize" ] && echo 
-
-[ ${#devices[*]} = 0 ] && die "there is no device in ${yellow}${device_path:2}${normal} directory!"
-[ ${#firmwares[*]} = 0 ] && die "there is no firmware in ${yellow}${firmware_path:2}${normal} directory!"
-[ ${#kernels[*]} = 0 ] && die "there is no kernel in ${yellow}${kernel_path:2}${normal} directory!"
 
 [ "$device" ] || choose_device
 [ "$firmware" ] || choose_firmware
