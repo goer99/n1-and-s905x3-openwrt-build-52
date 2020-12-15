@@ -19,10 +19,10 @@ die() {
 
 cleanup() {
     for x in $(lsblk | grep $(pwd) | grep -oE 'loop[0-9]+' | sort | uniq); do
-        umount -f /dev/${x}p[1-2] 2>/dev/null
-        umount -f /dev/$x 2>/dev/null
+        umount -f /dev/${x}p* 2>/dev/null
         losetup -d /dev/$x 2>/dev/null
     done
+    losetup -D
     rm -rf $tmp
 
     # do not clean up output dir after generated
@@ -307,6 +307,10 @@ do_others() {
     if ! grep -q 'ulimit -n' $path/etc/init.d/boot; then
         sed -i '/kmodloader/i\\tulimit -n 131072\n' $path/etc/init.d/boot
     fi
+
+    [ -f $path/etc/modules.d/usb-net-asix-ax88179 ] || printf 'ax88179_178a' > $path/etc/modules.d/usb-net-asix-ax88179
+    [ -f $path/etc/modules.d/usb-net-rtl8150 ] || printf 'rtl8150' > $path/etc/modules.d/usb-net-rtl8150
+    [ -f $path/etc/modules.d/usb-net-rtl8152 ] || printf 'r8152' > $path/etc/modules.d/usb-net-rtl8152
 
     chown -R 0:0 $path
 }
