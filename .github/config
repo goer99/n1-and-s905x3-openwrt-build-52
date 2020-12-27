@@ -5,12 +5,14 @@ cd lede
 (
     cd package
     git clone https://github.com/tuanqing/install-program
-    git clone https://github.com/tuanqing/openwrt-mentohust
-    git clone https://github.com/tuanqing/luci-app-mentohust
+#     git clone https://github.com/tuanqing/openwrt-mentohust
+#     git clone https://github.com/tuanqing/luci-app-mentohust
     git clone https://github.com/jerrykuku/luci-theme-argon -b 18.06
     git clone https://github.com/jerrykuku/luci-app-jd-dailybonus
-#     git clone https://github.com/lisaac/luci-lib-docker
-#     git clone https://github.com/lisaac/luci-app-dockerman
+    git clone https://github.com/jerrykuku/luci-app-ttnode
+    git clone https://github.com/jerrykuku/luci-app-argon-config
+    git clone https://github.com/lisaac/luci-lib-docker
+    git clone https://github.com/lisaac/luci-app-dockerman
 )
 
 cat >feeds.conf.default <<-EOF
@@ -23,10 +25,13 @@ src-git telephony https://git.openwrt.org/feed/telephony.git
 src-git helloworld https://github.com/fw876/helloworld.git
 EOF
 
-rm -rf package/lean/{samba4,luci-app-samba4,luci-app-ttyd,luci-theme-argon,luci-lib-docker}
-svn co https://github.com/Lienol/openwrt/branches/main/package/libs/{libaudit,musl-fts,libsemanage} package/libs
-
 ./scripts/feeds update -a
+
+rm -rf package/libs/nettle
+rm -rf package/lean/{samba4,luci-app-samba4,luci-app-ttyd,luci-theme-argon,luci-lib-docker}
+svn co https://github.com/Lienol/openwrt/branches/main/package/libs/{libaudit,libsemanage,musl-fts,nettle} package/libs
+svn co https://github.com/Lienol/openwrt-packages/branches/19.07/utils/docker-ce feeds/packages/utils
+
 ./scripts/feeds install -a
 
 git apply ../.github/patches/{0001*,0002*}.patch --directory=feeds/luci
@@ -76,9 +81,11 @@ CONFIG_PACKAGE_luci-app-aria2=y
 CONFIG_PACKAGE_luci-app-cifs-mount=y
 CONFIG_PACKAGE_luci-app-samba4=y
 CONFIG_PACKAGE_luci-app-ttyd=y
-CONFIG_PACKAGE_luci-app-mentohust=y
-# CONFIG_PACKAGE_luci-app-dockerman=y
+# CONFIG_PACKAGE_luci-app-mentohust=y
+CONFIG_PACKAGE_luci-app-dockerman=y
 CONFIG_PACKAGE_luci-app-jd-dailybonus=y
+CONFIG_PACKAGE_luci-app-ttnode=y
+CONFIG_PACKAGE_luci-app-argon-config=y
 ## luci theme
 CONFIG_PACKAGE_luci-theme-bootstrap-mod=y
 CONFIG_PACKAGE_luci-theme-argon=y
