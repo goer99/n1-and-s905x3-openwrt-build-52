@@ -14,6 +14,8 @@ cd lede
     git clone https://github.com/lisaac/luci-lib-docker
     git clone https://github.com/lisaac/luci-app-dockerman
 
+    sed -i 's/+docker-ce/+docker +dockerd/' luci-app-dockerman/applications/luci-app-dockerman/Makefile
+
     rm -rf libs/nettle
     rm -rf lean/{samba4,luci-app-samba4,luci-app-ttyd,luci-theme-argon,luci-lib-docker}
     svn co https://github.com/Lienol/openwrt/branches/main/package/libs/{libaudit,libsemanage,musl-fts,nettle} libs
@@ -26,15 +28,6 @@ src-git routing https://git.openwrt.org/feed/routing.git
 src-git telephony https://git.openwrt.org/feed/telephony.git
 src-git helloworld https://github.com/fw876/helloworld.git
 EOF
-
-./scripts/feeds update -a
-
-rm -rf feeds/packages/utils/{containerd,libnetwork,runc,tini}
-svn co https://github.com/Lienol/openwrt-packages/trunk/utils/docker-ce feeds/packages/utils/docker-ce
-svn co https://github.com/Lienol/openwrt-packages/trunk/utils/containerd feeds/packages/utils/containerd
-svn co https://github.com/Lienol/openwrt-packages/trunk/utils/libnetwork feeds/packages/utils/libnetwork
-svn co https://github.com/Lienol/openwrt-packages/trunk/utils/runc feeds/packages/utils/runc
-svn co https://github.com/Lienol/openwrt-packages/trunk/utils/tini feeds/packages/utils/tini
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
