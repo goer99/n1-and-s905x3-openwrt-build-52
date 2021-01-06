@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# Copyright (c) 2020 https://github.com/tuanqing/mknop
+# Copyright (c) 2020-2021 https://github.com/tuanqing/mknop
 # 
 # This is free software, licensed under the MIT.
 # See /LICENSE for more information.
@@ -467,8 +467,8 @@ yellow="\033[33m"
 normal="\033[0m"
 
 allwinner="vplus"
-amlogic="phicomm-n1 s905x3"
-rockchip="beikeyun l1pro"
+amlogic="phicomm-n1 s9xxx"
+rockchip="rk3328"
 
 device_path="./device"
 kernel_path="./common/kernel"

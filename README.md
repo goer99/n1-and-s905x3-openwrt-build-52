@@ -1,5 +1,5 @@
-# 自动构建斐讯 N1、微加云、贝壳云、我家云、S905x3( X96 Max Plus, HK1 Box ) OpenWrt 固件脚本
-# Automatically Build OpenWrt Firmware for Phicomm n1, Vplus, Beikeyun, L1-pro, S905x3( X96 Max Plus, HK1 Box ) etc
+# 自动构建斐讯 N1、微加云、贝壳云、我家云、S9xxx OpenWrt 固件脚本
+# Automatically Build OpenWrt Firmware for Phicomm n1, Vplus, Beikeyun, L1 Pro, S9xxx etc
 
 **制作脚本已部署到 Github Action，真正实现一栈式全自动构建，每周六早上六点准时为你构建，无须自行制作，下载即可用**
 
@@ -49,23 +49,21 @@
 * 目录说明
 ```
    ├── common                                公共目录
-   │   ├── firmware-common.tar.gz            armbian 固件
-   │   └── kernel                            内核目录
-   │       └── 5.4.68                        kernel 5.4.68-flippy-45+o @flippy
-   ├── device                                设备文件夹
-   │   ├── phicomm-n1                        phicomm n1 设备目录
-   │   │   ├── boot-phicomm-n1.tar.gz        phicomm n1 启动文件
-   │   │   └── root                          phicomm n1 rootfs 目录
-   │   └── vplus                             vplus 设备目录
-   │       ├── boot-vplus.tar.gz             vplus 启动文件
-   │       └── root                          vplus rootfs 目录
+   │   ├── firmware-common.tar.gz            armbian 固件
+   │   ├── kernel                            内核目录
+   │   │   └── 5.4.86                        kernel 5.4.86-flippy-51+o @flippy
+   │   ├── loader                            bootloader 目录
+   │   └── root                              公共 rootfs 目录
+   ├── device                                设备目录
+   │   └── phicomm-n1                        phicomm n1 设备目录
+   │       ├── boot-phicomm-n1.tar.gz        phicomm n1 启动文件
+   │       └── root                          phicomm n1 rootfs 目录
    ├── gen_openwrt                           构建脚本
    ├── LICENSE                               license
    ├── openwrt                               固件目录( 待构建 )
    ├── out                                   固件目录( 构建完成的 )
    ├── tmp                                   临时目录，脚本转储
    └── README.md                             readme
-
 ```
 
 * 使用参数
@@ -81,9 +79,9 @@
       `sudo ./gen_openwrt -c` ，清理文件  
       `sudo ./gen_openwrt -d` ，使用默认配置  
       `sudo ./gen_openwrt -k latest` ，使用最新内核  
-      `sudo ./gen_openwrt -m vplus`，构建 vplus 固件  
+      `sudo ./gen_openwrt -m phicomm-n1`，构建 phicomm n1 固件  
       `sudo ./gen_openwrt -s 512` ，将 ROOTFS 分区大小设置为 512M  
-      `sudo ./gen_openwrt -d -k 5.4.68 -m vplus` ，使用默认，构建 vplus 固件，并将内核版本设置为 5.4.68  
+      `sudo ./gen_openwrt -d -k 5.4.86 -m phicomm-n1` ，使用默认，构建 phicomm n1 固件，并将内核版本设置为 5.4.86  
       `sudo ./gen_openwrt -e` ，从 openwrt 目录中提取内核  
       `sudo ./gen_openwrt --mount` ，挂载 openwrt 目录中固件 
 
