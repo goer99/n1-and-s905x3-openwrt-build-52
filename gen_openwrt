@@ -17,6 +17,10 @@ die() {
     exit 1
 }
 
+no_dir() {
+    die "no such directory ${yellow}$1${normal}"
+}
+
 cleanup() {
     for x in $(lsblk | grep $(pwd) | grep -oE 'loop[0-9]+' | sort | uniq); do
         umount -f /dev/${x}p* 2>/dev/null
@@ -30,72 +34,65 @@ cleanup() {
 }
 
 get_devices() {
-    local path=$device_path
-    [ -d $path ] || return
+    [ -d $device_path ] || no_dir "$device_path"
     local len=0
     IFS=$'\n'
-    for x in $(ls $path); do
-        [ -f $path/$x/boot-*.tar.gz ] && devices[len++]=$x
+    for x in $(ls $device_path); do
+        [ -f $device_path/$x/boot-*.tar.gz ] && devices[len++]=$x
     done
 }
 
 get_kernels() {
-    local path=$kernel_path
-    [ -d $path ] || return
+    [ -d $kernel_path ] || no_dir "$kernel_path"
     local len=0
     IFS=$'\n'
-    for x in $(ls $path); do
-        [ -f $path/$x/kernel-*.tar.gz ] && [ -f $path/$x/modules-*.tar.gz ] \
-            && kernels[len++]=$x
+    for x in $(ls $kernel_path); do
+        [ -f $kernel_path/$x/kernel-*.tar.gz ] && [ -f $kernel_path/$x/modules-*.tar.gz ] &&
+            kernels[len++]=$x
     done
 }
 
 get_firmwares() {
-    local path=$firmware_path
-    [ -d $path ] || return
+    [ -d $firmware_path ] || no_dir "$firmware_path"
     local len=0
     IFS=$'\n'
-    for x in $(ls $path); do
+    for x in $(ls $firmware_path); do
         firmwares[len++]=$x
     done
 }
 
 choose_device() {
-    local i=0
     echo "device: "
-    choose_option "${devices[*]}" ${#devices[*]}
-    local opt=$?
-    device=${devices[opt]}
+    choose_option "${devices[*]}"
+    device=${devices[$?]}
     devices=($device)
     echo -e "${green}${device}${normal}\n"
 }
 
 choose_firmware() {
-    local i=0
     echo "firmware: "
-    choose_option "${firmwares[*]}" ${#firmwares[*]}
-    local opt=$?
-    firmware=${firmwares[opt]}
+    choose_option "${firmwares[*]}"
+    firmware=${firmwares[$?]}
     echo -e "${green}${firmware}${normal}\n"
 }
 
 choose_kernel() {
-    local i=0
     echo "kernel: "
-    choose_option "${kernels[*]}" ${#kernels[*]}
-    local opt=$?
-    kernel=${kernels[opt]}
+    choose_option "${kernels[*]}"
+    kernel=${kernels[$?]}
     kernels=($kernel)
     echo -e "${green}${kernel}${normal}\n"
 }
 
 choose_option() {
     local options=$1
-    local len=$2
+    local len=0
     local cnt=0
+    local i=0
 
     for x in ${options[*]}; do
         echo "($((++i))) => $x"
+        ((len++))
     done
 
     [ "$len" = 1 ] && return 0
@@ -115,7 +112,7 @@ choose_option() {
         fi
     done
 
-    [ $cnt = 3 ] && die "you type the wrong 3 times, the program automatically quit"
+    [ $cnt = 3 ] && echo && die "you type the wrong 3 times, the program automatically quit"
 
     return $opt
 }
@@ -156,44 +153,44 @@ unpack_openwrt() {
 
     while true; do
         case "$suffix" in
-            xz)
-                xz -dc $path > $tmp/${firmware%.*}
+        xz)
+            xz -dc $path >$tmp/${firmware%.*}
+            path=$tmp/${firmware%.*}
+            suffix=${path##*.}
+            ;;
+        gz)
+            # special for .tar.gz
+            if ls $path | grep -q '.tar.gz$'; then
+                tar xzf $path -C $common_root
+                break
+            else
+                gzip -dc $path >$tmp/${firmware%.*}
                 path=$tmp/${firmware%.*}
                 suffix=${path##*.}
+            fi
             ;;
-            gz) 
-                # special for .tar.gz
-                if ls $path | grep -q '.tar.gz$'; then
-                    tar xzf $path -C $common_root
-                    break
-                else
-                    gzip -dc $path > $tmp/${firmware%.*}
-                    path=$tmp/${firmware%.*}
-                    suffix=${path##*.}
-                fi
+        img | ext4)
+            do_losetup $path
+            if [ -d $mount/${loop_seq}p2 ]; then
+                cp -r $mount/${loop_seq}p2/* $common_root
+            # special for single partition image
+            elif [ -d $mount/${loop_seq}p1 ]; then
+                cp -r $mount/${loop_seq}p1/* $common_root
+            elif [ -d $mount/${loop_seq} ]; then
+                cp -r $mount/${loop_seq}/* $common_root
+            else
+                die "error unpack $path"
+            fi
+            break
             ;;
-            img|ext4)
-                do_losetup $path
-                if [ -d $mount/${loop_seq}p2 ]; then
-                    cp -r $mount/${loop_seq}p2/* $common_root
-                # special for single partition image
-                elif [ -d $mount/${loop_seq}p1 ]; then
-                    cp -r $mount/${loop_seq}p1/* $common_root
-                elif [ -d $mount/${loop_seq} ]; then
-                    cp -r $mount/${loop_seq}/* $common_root
-                ##
-                else
-                    die "error unpack $path"
-                fi
-                break
-            ;;
-            *)
-                die "unsupported firmware format!"
+        *)
+            die "unsupported firmware format!"
             ;;
         esac
     done
-    
+
     rm -rf $common_root/lib/modules/*/
+    tar xzf ./common/firmware-common.tar.gz -C $common_root
 }
 
 unpack_armbian() {
@@ -202,8 +199,8 @@ unpack_armbian() {
     device_final="$tmp/device/$device"
 
     mkdir -p $common_boot
-    tar xzf $path/kernel-*.tar.gz -C $common_boot 2>/dev/null
-    tar xzf ./common/firmware-common.tar.gz -C $common_root 2>/dev/null
+    tar xzf $path/kernel-*.tar.gz -C $common_boot #2>/dev/null
+    # tar xzf ./common/firmware-common.tar.gz -C $common_root #2>/dev/null
 
     mkdir -p ${device_final}/$kernel/{boot,root}
     cp -r $common_boot/* ${device_final}/$kernel/boot
@@ -275,44 +272,47 @@ make_firmware() {
             fi
         )
 
-        # do something else
+        # do something else for rootfs partition
         do_others "$mount/${loop_seq}p2"
     }
 }
 
 do_others() {
-    local path=$1
+    local rootfs=$1
+    [ -d $rootfs ] || no_dir "$rootfs"
 
-    mkdir -p $path/{boot,opt,run}
+    (
+        cd $rootfs && mkdir -p {boot,opt,run}
 
-    local is_amlogic=false
-    local is_rockchip=false
+        local is_amlogic=false
+        local is_rockchip=false
 
-    echo $amlogic | grep -iq $device && is_amlogic=true
-    echo $rockchip | grep -iq $device && is_rockchip=true
+        echo $amlogic | grep -iq $device && is_amlogic=true
+        echo $rockchip | grep -iq $device && is_rockchip=true
 
-    if [ $is_amlogic = true ]; then
-        printf 'pwm_meson' > $path/etc/modules.d/pwm-meson
-        sed -i 's/ttyAMA0/ttyAML0/' $path/etc/inittab
-        sed -i 's/ttyS0/tty0/' $path/etc/inittab
-    elif [ $is_rockchip = true ]; then
-        sed -i 's/ttyAMA0/tty1/' $path/etc/inittab
-        sed -i 's/ttyS0/ttyS2/' $path/etc/inittab
-        [ -f $path/etc/config/fstab ] && sed -i 's/vfat/ext4/' $path/etc/config/fstab
-    fi
+        if [ $is_amlogic = true ]; then
+            printf 'pwm_meson' >etc/modules.d/pwm-meson
+            sed -i 's/ttyAMA0/ttyAML0/' etc/inittab
+            sed -i 's/ttyS0/tty0/' etc/inittab
+        elif [ $is_rockchip = true ]; then
+            sed -i 's/ttyAMA0/tty1/' etc/inittab
+            sed -i 's/ttyS0/ttyS2/' etc/inittab
+            [ -f etc/config/fstab ] && sed -i 's/vfat/ext4/' etc/config/fstab
+        fi
 
-    if ! grep -q '/tmp/upgrade' $path/etc/init.d/boot; then
-            sed -i '/kmodloader/i\\tmkdir -p \/tmp\/upgrade' $path/etc/init.d/boot
-    fi
-    if ! grep -q 'ulimit -n' $path/etc/init.d/boot; then
-        sed -i '/kmodloader/i\\tulimit -n 131072\n' $path/etc/init.d/boot
-    fi
+        if ! grep -q '/tmp/upgrade' etc/init.d/boot; then
+            sed -i '/kmodloader/i \\tmkdir -p \/tmp\/upgrade' etc/init.d/boot
+        fi
+        if ! grep -q 'ulimit -n' etc/init.d/boot; then
+            sed -i '/kmodloader/i \\tulimit -n 131072\n' etc/init.d/boot
+        fi
 
-    [ -f $path/etc/modules.d/usb-net-asix-ax88179 ] || printf 'ax88179_178a' > $path/etc/modules.d/usb-net-asix-ax88179
-    [ -f $path/etc/modules.d/usb-net-rtl8150 ] || printf 'rtl8150' > $path/etc/modules.d/usb-net-rtl8150
-    [ -f $path/etc/modules.d/usb-net-rtl8152 ] || printf 'r8152' > $path/etc/modules.d/usb-net-rtl8152
+        [ -f etc/modules.d/usb-net-asix-ax88179 ] || printf 'ax88179_178a' >etc/modules.d/usb-net-asix-ax88179
+        [ -f etc/modules.d/usb-net-rtl8150 ] || printf 'rtl8150' >etc/modules.d/usb-net-rtl8150
+        [ -f etc/modules.d/usb-net-rtl8152 ] || printf 'r8152' >etc/modules.d/usb-net-rtl8152
+    )
 
-    chown -R 0:0 $path
+    chown -R 0:0 $rootfs
 }
 
 set_rootsize() {
@@ -351,16 +351,16 @@ extract_kernel() {
     if [ -f $mount/${loop_seq}p1/uInitrd-* ]; then
         cp $mount/${loop_seq}p1/uInitrd-* $tmp/$version/boot
     else
-        [ -f $mount/${loop_seq}p1/uInitrd ] && \
-            cp $mount/${loop_seq}p1/uInitrd $tmp/$version/boot || \
+        [ -f $mount/${loop_seq}p1/uInitrd ] &&
+            cp $mount/${loop_seq}p1/uInitrd $tmp/$version/boot ||
             die "no uInitrd found in $firmware!"
         mv $tmp/$version/boot/uInitrd $tmp/$version/boot/uInitrd-$kversion
     fi
     if [ -f $mount/${loop_seq}p1/vmlinuz-* ]; then
         cp $mount/${loop_seq}p1/vmlinuz-* $tmp/$version/boot
     else
-        [ -f $mount/${loop_seq}p1/zImage ] && \
-            cp $mount/${loop_seq}p1/zImage $tmp/$version/boot || \
+        [ -f $mount/${loop_seq}p1/zImage ] &&
+            cp $mount/${loop_seq}p1/zImage $tmp/$version/boot ||
             die "no vmlinuz found in $firmware!"
         mv $tmp/$version/boot/zImage $tmp/$version/boot/vmlinuz-$kversion
     fi
@@ -391,10 +391,10 @@ extract_kernel() {
 
     [ -f $tmp/$version/kernel-$version.tar.gz ] && [ -f $tmp/$version/modules-$version.tar.gz ] && {
         [ -d $kernel_path/$version ] && {
-            echo && read -p "this version $(echo -e "${yellow}${version}${normal}") already exists, do you want to replace it? [Y/n] " yn && echo 
+            echo && read -p "this version $(echo -e "${yellow}${version}${normal}") already exists, do you want to replace it? [Y/n] " yn && echo
             case "$yn" in
-                n|N) yn=n ;;
-                *) yn=y ;;
+            n | N) yn=n ;;
+            *) yn=y ;;
             esac
         }
         [[ ! "$yn" || "$yn" = "y" ]] && {
@@ -418,24 +418,24 @@ mount_image() {
 
     while true; do
         case "$suffix" in
-            xz)
-                echo -e "${green}unpack${normal}"
-                xz -dc $path > $tmp/${firmware%.*}
-                path=$tmp/${firmware%.*}
-                suffix=${path##*.}
+        xz)
+            echo -e "${green}unpack${normal}"
+            xz -dc $path >$tmp/${firmware%.*}
+            path=$tmp/${firmware%.*}
+            suffix=${path##*.}
             ;;
-            gz)
-                echo -e "${green}unpack${normal}"
-                gzip -dc $path > $tmp/${firmware%.*}
-                path=$tmp/${firmware%.*}
-                suffix=${path##*.}
+        gz)
+            echo -e "${green}unpack${normal}"
+            gzip -dc $path >$tmp/${firmware%.*}
+            path=$tmp/${firmware%.*}
+            suffix=${path##*.}
             ;;
-            img)
-                do_losetup $path
-                break
+        img)
+            do_losetup $path
+            break
             ;;
-            *)
-                die "unsupported firmware format!"
+        *)
+            die "unsupported firmware format!"
             ;;
         esac
     done
@@ -485,68 +485,66 @@ get_kernels
 
 while [ "$1" ]; do
     case "$1" in
-        -h|--help)
-            usage
-            exit
+    -h | --help)
+        usage
+        exit
         ;;
-        -c|--clean)
-            cleanup
-            echo -e "${green}done${normal}"
-            exit
+    -c | --clean)
+        cleanup
+        echo -e "${green}clean up done${normal}"
+        exit
         ;;
-        -d|--default)
-            : ${device:="all"}
-            : ${firmware:=${firmwares[0]}}
-            : ${kernel:="all"}
-            : ${rootsize:=$minsize}
+    -d | --default)
+        : ${device:="all"}
+        : ${firmware:=${firmwares[0]}}
+        : ${kernel:="all"}
+        : ${rootsize:=$minsize}
         ;;
-        -e)
-            extract_kernel
-            exit
+    -e)
+        extract_kernel
+        exit
         ;;
-        -k)
-            kernel=$2
-            if [ -f $kernel_path/$kernel/kernel-*.tar.gz ] && \
-               [ -f $kernel_path/$kernel/modules-*.tar.gz ]; then
-                kernels=($kernel)
-                shift
-            elif [ "$kernel" = "all" ]; then
-                [ ${#kernels[*]} = 0 ] && unset kernel
-                shift
-            elif [ "$kernel" = "latest" ]; then
-                [ ${#kernels[*]} = 0 ] && unset kernel || kernel=${kernels[-1]}
-                shift
-            else
-                die "invalid kernel ${red}$kernel${normal}"
-            fi
+    -k)
+        kernel=$2
+        if [ -f $kernel_path/$kernel/kernel-*.tar.gz ] &&
+            [ -f $kernel_path/$kernel/modules-*.tar.gz ]; then
+            kernels=($kernel)
+            shift
+        elif [ "$kernel" = "all" ]; then
+            shift
+        elif [ "$kernel" = "latest" ]; then
+            [ ${#kernels[*]} = 0 ] || kernel=${kernels[-1]}
+            shift
+        else
+            die "invalid kernel ${red}$kernel${normal}"
+        fi
         ;;
-        -m)
-            device=$2
-            if [ -f $device_path/$device/boot-*.tar.gz ]; then
-                devices=($device)
-                shift
-            elif [ "$device" = "all" ]; then
-                [ ${#devices[*]} = 0 ] && unset device
-                shift
-            else
-                die "invalid device ${red}$device${normal}"
-            fi
+    -m)
+        device=$2
+        if [ -f $device_path/$device/boot-*.tar.gz ]; then
+            devices=($device)
+            shift
+        elif [ "$device" = "all" ]; then
+            shift
+        else
+            die "invalid device ${red}$device${normal}"
+        fi
         ;;
-        --mount)
-            mount_image
-            exit
+    --mount)
+        mount_image
+        exit
         ;;
-        -s|--size)
-            rootsize=$2
-            if [[ "$rootsize" -ge "$minsize" ]] 2>/dev/null; then
-                shift
-            else
-                die "invalid rootsize ${red}$rootsize${normal}"
-            fi
+    -s | --size)
+        rootsize=$2
+        if [[ "$rootsize" -ge "$minsize" ]] 2>/dev/null; then
+            shift
+        else
+            die "invalid rootsize ${red}$rootsize${normal}"
+        fi
         ;;
-        *)
-            usage
-            die "invalid option ${red}$1${normal}"
+    *)
+        usage
+        die "invalid option ${red}$1${normal}"
         ;;
     esac
     shift
@@ -566,7 +564,7 @@ done
     echo -e "${kernels[@]}" | sed 's/ /, /g'
 }
 [ "$rootsize" ] && echo -e "rootsize\t=>  $rootsize"
-[ "$device" ] || [ "$firmware" ] || [ "$kernel" ] || [ "$rootsize" ] && echo 
+[ "$device" ] || [ "$firmware" ] || [ "$kernel" ] || [ "$rootsize" ] && echo
 
 [ "$device" ] || choose_device
 [ "$firmware" ] || choose_firmware
@@ -578,13 +576,13 @@ unpack_openwrt
 
 for kernel in ${kernels[*]}; do
     for device in ${devices[*]}; do
-    {
-        echo -e "${green}unpack armbian${normal}  =>  $device @ $kernel"
-        unpack_armbian
-        echo -e "${green}make firmware${normal}\t=>  $device @ $kernel"
-        make_firmware
-        echo -e "${green}done${normal}\t\t=>  $device @ $kernel"
-    } &
+        {
+            echo -e "${green}unpack armbian${normal} ( $device @ $kernel )"
+            unpack_armbian
+            echo -e "${green}make firmware${normal} ( $device @ $kernel )"
+            make_firmware
+            echo -e "${green}done${normal} ( $device @ $kernel )"
+        } &
     done
 done
 
