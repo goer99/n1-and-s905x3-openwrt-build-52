@@ -1,3 +1,5 @@
+imported from: https://github.com/tuanqing/mknop
+
 # 自动构建斐讯 N1、微加云、贝壳云、我家云、S9xxx OpenWrt 固件脚本
 # Automatically Build OpenWrt Firmware for Phicomm n1, Vplus, Beikeyun, L1 Pro, S9xxx etc
 
